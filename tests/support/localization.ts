@@ -1,13 +1,13 @@
 import { expect, type Page } from "@playwright/test"
 
 /**
- * 英文泄漏审查的统一规则（Phase 3）。
+ * 英文泄漏审查的统一规则。
  *
  * 允许列表**只在这里维护一份**——各个 spec 里不再出现任何例外，
  * 这样新增页面时只需要问一个问题：这段西文属于下面哪一类？
  *
  * 判定顺序：
- *   1. 文本含中文 → 已本地化（中英混排的技术名词也算，例如「Motion 驱动的动画」）。
+ *   1. 文本含中文 → 已本地化（中英混排的技术名词也算）。
  *   2. 不到 3 个连续字母 → 不是文案（金额、百分比、快捷键符号）。
  *   3. 命中 ALLOWED_ENGLISH 任一条 → 属于允许类别。
  *   4. 其余一律视为漏翻。
@@ -15,35 +15,41 @@ import { expect, type Page } from "@playwright/test"
 export const ALLOWED_ENGLISH: RegExp[] = [
   /** 纯数字 / 金额 / 日期 / 百分比。 */
   /^[\d\s.,:%¥$+\-–—/()]+$/,
-  /** 键盘快捷键：⌘K、⌘K →、Ctrl+K…（符号来自 lib/i18n 的快捷键文案）。 */
+  /** 键盘快捷键：⌘K、⌘K →、Ctrl+K… */
   /^[⌘⇧⌥⌃A-Za-z0-9+→↑↓←\s]{1,12}$/,
-  /** 邮箱地址——记录内容，不是界面文案。 */
+  /** 凭证号 / 发票号 / 账单号——财务记录编号，不是界面文案。 */
+  /^(INV|BILL|SK|PZ|DB)-[0-9A-Za-z-]+$/,
+  /** 邮箱地址——记录内容。 */
   /@/,
   /** URL 与路由。 */
   /^https?:\/\//,
-  /^\/[a-z][a-z0-9/_-]*$/,
+  /^\/[a-z][a-z0-9/_.-]*$/,
   /** 日期与 ISO 时间戳。 */
   /^\d{4}-\d{2}-\d{2}/,
-  /** HTTP 方法与请求信息。 */
+  /** 记账月份：2026-09。 */
+  /^\d{4}-\d{2}$/,
+  /** HTTP 方法与请求信息（错误态会展示它）。 */
   /^(GET|POST|PUT|PATCH|DELETE)\s/,
-  /** 技术栈名称（允许列表明确要求的「技术栈名称」「必要的专有名词」）。 */
+  /** 技术栈名称（明确允许的专有名词）。 */
   /^(Next\.js|Tailwind|shadcn|Motion|Zustand|Recharts|Playwright|Base UI|pnpm|npm|Node)\b/,
+  /** 供应商产品名——账本里的专有名词（与客户名、银行名同类）。 */
+  /^(GitHub Enterprise|Figma|Datadog|JetBrains|Atlassian|Sentry|Notion|Jira|Confluence)\b/,
   /^(AGENTS\.md|CLAUDE\.md|README\.md|SKILL\.md)\b/,
   /^(lint|typecheck|build|dev|check)$/,
-  /** 模型 / 服务标识符——代码标识符，不是文案。 */
+  /** 服务标识符——代码标识符，不是文案。 */
   /^(zhiwu-copilot-v2|api\.[a-z0-9.-]+)$/,
 ]
 
-/** 需要做「零英文」检查的页面：落地页、演示、CRM 全部路由。 */
+/** 需要做「零英文」检查的页面：落地页与财务工作台全部路由。 */
 export const LOCALIZED_ROUTES = [
   "/",
-  "/demo",
-  "/crm",
-  "/crm/customers",
-  "/crm/customers/c-004",
-  "/crm/opportunities",
-  "/crm/tasks",
-  "/crm/activities",
+  "/finance",
+  "/finance/cashflow",
+  "/finance/analysis",
+  "/finance/budget",
+  "/finance/insights",
+  "/finance/risks",
+  "/finance/transactions",
 ] as const
 
 /**
@@ -82,7 +88,13 @@ export function findUntranslated(texts: string[]): string[] {
 
 /** 断言当前页面没有未本地化的界面文案。 */
 export async function expectFullyLocalized(page: Page, label = ""): Promise<void> {
-  await page.waitForTimeout(350)
+  await page.waitForTimeout(320)
   const unlocalized = findUntranslated(await collectVisibleText(page))
   expect(unlocalized, `${label} 出现未本地化的西文文案`).toEqual([])
+}
+
+/** 打开一个财务路由，并等待账本就绪（模拟加载完成）。 */
+export async function openLedger(page: Page, route = "/finance"): Promise<void> {
+  await page.goto(route)
+  await expect(page.getByTestId("finance-content")).toBeVisible({ timeout: 20_000 })
 }
