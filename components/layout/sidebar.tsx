@@ -2,16 +2,7 @@
 
 import Link from "next/link"
 import { motion } from "motion/react"
-import {
-  ActivityIcon,
-  BlocksIcon,
-  ChevronRightIcon,
-  LayoutDashboardIcon,
-  RefreshCwIcon,
-  SettingsIcon,
-  UsersIcon,
-  type LucideIcon,
-} from "lucide-react"
+import { BlocksIcon, ChevronRightIcon, RefreshCwIcon, type LucideIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useMessages } from "@/components/i18n/locale-provider"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -100,19 +91,6 @@ export interface NavStatusDef {
 }
 
 /**
- * 内置演示（/demo）的默认导航项——未传 items 时使用。
- * 文案来自词典的 `demo` 分组，组件本身不含硬编码文案。
- */
-export function defaultNavItems(t: ReturnType<typeof useMessages>): NavItemDef[] {
-  return [
-    { id: "overview", label: t.demo.nav.overview, icon: LayoutDashboardIcon },
-    { id: "customers", label: t.demo.nav.customers, icon: UsersIcon },
-    { id: "activity", label: t.demo.nav.activity, icon: ActivityIcon },
-    { id: "settings", label: t.demo.nav.settings, icon: SettingsIcon },
-  ]
-}
-
-/**
  * 品牌标识。
  *
  * 这是侧栏里唯一的"产品身份"时刻：一个实心品牌色方块 + 一条内高光，
@@ -184,21 +162,27 @@ export function SidebarNav({
 }) {
   const t = useMessages()
   const resolvedBrand: NavBrandDef = brand ?? {
-    name: t.demo.brandName,
-    subtitle: t.demo.brandSubtitle,
+    name: t.workspace.brandName,
+    subtitle: t.workspace.brandSubtitle,
     icon: BlocksIcon,
   }
-  const resolvedItems = items ?? defaultNavItems(t)
+  // 导航由调用方给出：侧栏是产品结构的显示器，不预设任何产品的内容。
+  const resolvedItems = items ?? []
   const resolvedUser: NavUserDef = user ?? {
-    name: t.demo.userName,
-    email: t.demo.userEmail,
-    initials: t.demo.userInitials,
+    name: t.workspace.userName,
+    email: t.workspace.userEmail,
+    initials: t.workspace.userInitials,
   }
   const resolvedContext: NavContextDef | null = context ?? null
   const resolvedUsage: NavUsageDef | null =
     resolvedContext ??
     (usage === undefined
-      ? { label: t.demo.usageLabel, value: t.demo.usageValue, progress: 64, hint: t.demo.usageHint }
+      ? {
+          label: t.workspace.usageLabel,
+          value: t.workspace.usageValue,
+          progress: 99,
+          hint: t.workspace.usageHint,
+        }
       : usage)
 
   const pageItems = resolvedItems.filter((item) => item.tone !== "action")

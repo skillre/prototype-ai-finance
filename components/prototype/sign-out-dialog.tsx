@@ -53,7 +53,7 @@ export function SignOutDialog({
         <DialogHeader>
           <DialogTitle>{t.dialogs.signOut.title}</DialogTitle>
           <DialogDescription className="text-pretty">
-            {t.dialogs.signOut.description(accountEmail)}
+            {t.dialogs.signOut.description(accountEmail ?? "")}
           </DialogDescription>
         </DialogHeader>
 

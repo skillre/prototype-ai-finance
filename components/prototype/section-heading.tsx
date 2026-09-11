@@ -53,7 +53,13 @@ export function SectionHeading({
           <p className="text-body-sm text-pretty text-muted-foreground">{description}</p>
         ) : null}
       </div>
-      {action ? <div className="flex shrink-0 items-center gap-2">{action}</div> : null}
+      {/*
+        操作区：桌面靠右并保持固有宽度（shrink-0），移动端独占一行并允许换行。
+        否则一段三维读数（例如现金流的期末/净额/最低点）在最窄视口上会把整页撑宽。
+      */}
+      {action ? (
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:shrink-0">{action}</div>
+      ) : null}
     </div>
   )
 }
