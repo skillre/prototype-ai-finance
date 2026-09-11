@@ -235,7 +235,7 @@ export function TransactionDrawer({
           {discipline === null ? null : (
             <section className="flex flex-col gap-2 border-t border-hairline pt-4">
               <div className="flex items-baseline justify-between gap-3">
-                <h3 className="eyebrow text-muted-foreground">{t.finance.drawer.customer}</h3>
+                <h3 className="eyebrow text-muted-foreground">{t.finance.drawer.discipline}</h3>
                 <span className="numeric text-body">{formatPercent1(discipline * 100)}</span>
               </div>
               <span
@@ -277,7 +277,7 @@ export function TransactionDrawer({
       testId="transaction-drawer"
     >
       <EmptyState
-        title={t.finance.transactions.empty}
+        title={t.finance.drawer.missing}
         description={t.finance.transactions.emptyHint}
       />
     </DetailDrawer>
