@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useTheme } from "@/components/theme-provider"
 import { toast } from "sonner"
 import {
+  BarChart3Icon,
   BellIcon,
   ChevronDownIcon,
   CreditCardIcon,
@@ -13,10 +14,11 @@ import {
   RotateCwIcon,
   SearchIcon,
   SettingsIcon,
+  ShieldAlertIcon,
   SunIcon,
   TriangleAlertIcon,
-  UserPlusIcon,
   ZapIcon,
+  type LucideIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -39,25 +41,33 @@ import {
 } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useMessages } from "@/components/i18n/locale-provider"
-import { useDashboardStore } from "@/stores/dashboard-store"
 import type { NavId } from "@/components/layout/sidebar"
-import type { AppNotification } from "@/lib/mock-data"
 import { cn } from "@/lib/utils"
 
-const KIND_ICON = {
-  payment: CreditCardIcon,
-  trial: UserPlusIcon,
-  usage: ZapIcon,
-  report: BellIcon,
-} as const
-
 /**
- * 顶栏的数据来源。默认（不传）时行为与 Starter 完全一致：读取 dashboard-store。
- * 其他原型（如 AI CRM）可注入自己的通知、状态与动作，而无需复制这个组件。
+ * 通知的类型决定图标。类型是"产品语义"，图标留在组件里，文案来自词典——
+ * 因此换一个产品只需要换 kind，不需要动这个组件。
  */
-/** 通知条目可携带关联客户 id，用于生成真实详情页链接。 */
-export interface TopNavNotification extends AppNotification {
-  customerId?: string
+export type NotificationKind = "payment" | "budget" | "risk" | "report" | "sync"
+
+const KIND_ICON: Record<NotificationKind, LucideIcon> = {
+  payment: CreditCardIcon,
+  budget: TriangleAlertIcon,
+  risk: ShieldAlertIcon,
+  report: BarChart3Icon,
+  sync: ZapIcon,
+}
+
+/** 顶栏通知条目。 */
+export interface TopNavNotification {
+  id: string
+  title: string
+  description: string
+  time: string
+  unread: boolean
+  kind: NotificationKind
+  /** 可选：条目要跳到哪个页面。 */
+  href?: string
 }
 
 export interface TopNavDataSource {
@@ -67,11 +77,11 @@ export interface TopNavDataSource {
   onSimulateFailure?: () => void
   onReset?: () => void
   onMarkAllRead: () => void
-  /** 传入后，「退出登录」调用它（CRM 用它打开真实确认对话框）。 */
+  /** 传入后，「退出登录」调用它（用来打开真实确认对话框）。 */
   onSignOut?: () => void
-  /** 传入后，通知条目会导航到对应客户的详情页（而不是只弹 toast）。 */
+  /** 传入后，通知条目会导航到对应页面（而不是只弹 toast）。 */
   notificationHref?: (notification: TopNavNotification) => string
-  /** 账户菜单里第一项的目标 id（默认「快速上手」）。 */
+  /** 账户菜单里第一项的目标 id（默认「个人资料」）。 */
   primaryNavId?: NavId
   /** 账户菜单里第一项的文案（默认「快速上手」）。 */
   primaryNavLabel?: string
@@ -100,8 +110,11 @@ type TopNavProps = {
   subtitle: string
   onOpenCommand: () => void
   onNavigate: (id: NavId) => void
-  /** 不传则使用内置的 dashboard-store 数据源。 */
-  dataSource?: TopNavDataSource
+  /**
+   * 数据来源由调用方注入。
+   * 顶栏不读任何产品 store——它是"这一个工作区现在怎么样"的显示器。
+   */
+  dataSource: TopNavDataSource
 }
 
 /** 桌面端顶栏：页面标题、全局搜索、刷新、主题、通知、演示控制、账户菜单。 */
@@ -113,30 +126,20 @@ export function TopNav({
   dataSource,
 }: TopNavProps) {
   const t = useMessages()
+  const {
+    notifications,
+    status,
+    onRefresh: refresh,
+    onSimulateFailure: simulateApiFailure,
+    onReset: resetDemo,
+    onMarkAllRead: markAllNotificationsRead,
+    onSignOut,
+    notificationHref,
+  } = dataSource
 
-  // Hooks 必须无条件调用；未注入时读到的 store 值仅用于兜底默认行为。
-  const storeNotifications = useDashboardStore((state) => state.notifications)
-  const storeMarkAll = useDashboardStore((state) => state.markAllNotificationsRead)
-  const storeRefresh = useDashboardStore((state) => state.refresh)
-  const storeSimulateFailure = useDashboardStore((state) => state.simulateApiFailure)
-  const storeReset = useDashboardStore((state) => state.resetDemo)
-  const storeStatus = useDashboardStore((state) => state.status)
-
-  const notifications = dataSource?.notifications ?? storeNotifications
-  const markAllNotificationsRead = dataSource?.onMarkAllRead ?? storeMarkAll
-  const refresh = dataSource?.onRefresh ?? storeRefresh
-  const simulateApiFailure = dataSource?.onSimulateFailure ?? storeSimulateFailure
-  const resetDemo = dataSource?.onReset ?? storeReset
-  const status = dataSource?.status ?? storeStatus
-  const account = dataSource?.account ?? {
-    name: t.account.name,
-    email: t.account.email,
-    initials: t.account.initials,
-  }
-  const primaryNavId = dataSource?.primaryNavId ?? "settings"
-  const primaryNavLabel = dataSource?.primaryNavLabel ?? t.demo.quickStart
-  const notificationHref = dataSource?.notificationHref
-  const onSignOut = dataSource?.onSignOut
+  const account = dataSource.account
+  const primaryNavId = dataSource.primaryNavId ?? "profile"
+  const primaryNavLabel = dataSource.primaryNavLabel ?? t.workspace.quickStart
 
   // Defaults come from the dictionary; a prototype only overrides what differs.
   const labels = {
@@ -154,7 +157,7 @@ export function TopNav({
     prototypeState: t.prototype.title,
     prototypeStateDescription: t.prototype.description,
     accountMenu: t.a11y.accountMenu,
-    ...dataSource?.labels,
+    ...dataSource.labels,
   }
 
   const { resolvedTheme, setTheme } = useTheme()
@@ -164,7 +167,7 @@ export function TopNav({
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark")
 
   const handleReset = () => {
-    resetDemo()
+    resetDemo?.()
     toast.success(labels.resetToastTitle, {
       description: labels.resetToastDescription,
     })
@@ -382,7 +385,7 @@ export function TopNav({
                       variant="ghost"
                       size="icon-sm"
                       aria-label={t.a11y.prototypeControls}
-                      data-testid="demo-controls"
+                      data-testid="prototype-controls"
                       className="text-muted-foreground hover:text-foreground"
                     />
                   }
@@ -409,7 +412,7 @@ export function TopNav({
                 type="button"
                 className="justify-start text-danger hover:bg-danger-soft hover:text-danger"
                 onClick={() => {
-                  simulateApiFailure()
+                  simulateApiFailure?.()
                   toast.error(t.toast.refreshFailed, {
                     description: t.toast.refreshFailedDescription,
                   })

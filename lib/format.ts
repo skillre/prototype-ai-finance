@@ -3,13 +3,30 @@
  * numbers, dates and person initials.
  *
  * Money rules (kept deliberately consistent):
- *   • Detail views, tables and records  → full precision, ¥ + thousands:  ¥1,480,000
- *   • KPI hero numbers and chart axes   → 万元 compact:                   ¥2,650万
+ *   • 凭证、流水、表格里的金额 → 全精度、带千分位：  ¥1,480,000
+ *   • Hero 大数字与图表坐标轴     → 万元紧凑：        ¥1,480万
+ *   • 需要可比性的地方（跑道、执行率）→ 固定 1–2 位小数
  */
 
 export type Currency = "CNY" | "USD"
 
 const LOCALE = "zh-CN"
+
+/**
+ * 一位 / 两位小数（用于跑道月数、执行率这类"要能对齐"的数字）。
+ * 14.76 → "14.8"，99.0 → "99.0"。
+ */
+export const formatRatio = (value: number, digits: 0 | 1 | 2 = 1): string => {
+  if (!Number.isFinite(value)) return "—"
+  return value.toFixed(digits)
+}
+
+/** 带符号百分比："9.8" → "+9.8%"，"-2.4" → "-2.4%"。 */
+export const formatSignedPercent = (value: number, digits = 1): string =>
+  `${value >= 0 ? "+" : ""}${value.toFixed(digits)}%`
+
+/** 增长率等文案里用的百分比："92.5%"（一位小数，不带符号）。 */
+export const formatPercent1 = (value: number): string => `${value.toFixed(1)}%`
 
 /** Full-precision currency: 1480000 → "¥1,480,000". */
 export const formatCurrency = (value: number, currency: Currency = "CNY"): string =>
@@ -52,6 +69,20 @@ export const formatDateShort = (iso: string): string => {
   if (!date) return iso
   return `${date.getUTCMonth() + 1}月${date.getUTCDate()}日`
 }
+
+/** "2026-09-11" → "2026年9月" — 财务口径一律精确到月。 */
+export const formatMonthLabel = (iso: string): string => {
+  const date = parseISODate(iso)
+  if (!date) return iso
+  return `${date.getUTCFullYear()}年${date.getUTCMonth() + 1}月`
+}
+
+/** "2026-09" → "2026年9月"。 */
+export const formatMonthKey = (month: string): string =>
+  `${month.slice(0, 4)}年${Number(month.slice(5))}月`
+
+/** "2026-09-11" → "2026-09-11"（凭证、账本里保持原样，便于对账）。 */
+export const formatISODate = (iso: string): string => iso.slice(0, 10)
 
 /** Hours since last touch → "3 小时前" / "昨天" / "12 天前". */
 export const formatRelativeHours = (hours: number): string => {

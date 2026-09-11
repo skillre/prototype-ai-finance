@@ -1,288 +1,153 @@
-# Prototype Starter
+# 智悟云 · AI 财务工作台 (AI Finance)
 
-A reusable, agent-friendly foundation for building **high-fidelity interactive prototypes**:
-Next.js 16 (App Router) + TypeScript + Tailwind CSS v4 + shadcn/ui + Motion + Zustand —
-frontend only, local state, realistic mock data. No database, no auth, no backend service.
+**AI-native financial command center** —— 面向中小企业经营者、财务负责人与管理层的交互式原型。
 
-## Quick start
+打开 `/finance`，第一屏回答的不是"这个月赚了多少"，而是**"还能撑多久"**：
+现金头寸、现金跑道月数、未来 90 天推演共用同一个构图，并且**假设可以被拖动**——
+收入达成率、成本系数、回款率三个滑杆一改，跑道、警戒线日期、预测曲线与全部结论
+立刻重算。
 
 ```bash
 pnpm install
-pnpm dev          # http://localhost:3000 — demo dashboard at /demo
-pnpm check        # lint + typecheck + Playwright e2e
-pnpm build        # production build (Turbopack)
-```
-
-First e2e run needs browsers once: `pnpm exec playwright install chromium`.
-
-## Why this starter
-
-- **Real interactions, no mockups.** Every visible control works against local state:
-  filters, drag-and-drop ordering, add-customer dialog, detail drawer, command palette
-  (⌘K), sign-out, theme toggle, loading/empty/error states.
-- **Design System V2.** A complete token hierarchy in one layer (`app/globals.css`) with a
-  JS mirror (`lib/motion-presets.ts`) — Light and Dark, semantic colour roles, type scale,
-  radius & elevation semantics, and intent-named motion. See below.
-- **Chinese-first localization.** Every user-visible string in `app/**` and `components/**`
-  resolves through `lib/i18n` — landing page, demo dashboard, CRM and 404s alike.
-  No scattered copy; adding a locale is one file.
-- **Reusable component library.** Generic building blocks you copy into new prototypes:
-  `components/prototype/*` (OpenSection, SectionHeading, MetricStrip/MetricItem —
-  the V3 composition primitives; StatsCard, ChartCard, DataTable, FilterBar, DetailDrawer,
-  CommandPalette, EmptyState, LoadingState, ErrorState, OnboardingWizard, AmbientBackdrop),
-  `components/motion/*` (FadeIn, SlideIn, ScaleIn, PageTransition, StaggerContainer,
-  AnimatedNumber), `components/layout/*` (Sidebar, TopNav, MobileNav, PageContainer).
-- **Agent-first.** `AGENTS.md` pins development rules (inspect first, reuse components,
-  real interactions only, browser QA, quality gates, git safety & branch strategy).
-  `skills/interactive-prototype/SKILL.md` defines the full build workflow
-  and `skills/git-delivery/SKILL.md` defines the delivery workflow.
-- **Verified.** 59 Playwright e2e flows cover routing integrity, navigation, forms,
-  drawers, drag-and-drop, the command palette, English-leakage auditing, theme tokens and
-  mobile viewports.
-
-## Design System V4 — AI Sales Command Center
-
-Premium interactive data product: **composition** carries the hierarchy, not card borders.
-V4 is not a visual pass — it is the step from "a well-designed dashboard" to a product
-with a point of view: the screen opens with **revenue intelligence**, then the product
-**speaks** (AI insight), then the data, then the metrics, and only then the records.
-
-### The composition ladder
-
-Every screen opens with exactly one protagonist, then steps down. Modules do not all get
-the same weight — that is the whole design.
-
-| Level | What it is | Where (`/crm`) |
-| --- | --- | --- |
-| **L1 · Revenue Intelligence** | The hero: `text-metric` number + the chart it belongs to, sharing one plane. The readout lives *inside* the plot's reserved top band, so the number and the data occupy the same composition instead of sitting side by side. | `RevenueHero` |
-| **L2 · AI Insight** | The product speaks: a derived sentence about growth attribution, three named accounts you can hover (they highlight the matching row further down) and a risk statement with a real next step. | `AiInsightLayer` + `lib/insights.ts` |
-| **L3 · Intelligence module** | Editorial numbered block — `01 / 02 / 03`, ranked by urgency, not by amount. No card. | `OpportunitySpotlight` |
-| **L4 · Data visualisation** | Stage composition as **one** segmented bar + a drill-down legend; owner performance as a **vertical visual ranking**. No "rows with a right-aligned value". | `StageComposition`, owner ranking |
-| **L5 · Secondary metrics** | Four figures on hairlines with real 12-month micro-trends. | `MetricStrip` / `MetricItem` |
-| **L6 · Live + records** | A real event stream with a real clock, the day-grouped activity timeline, the task queue and the ranked key accounts. | `LiveDataLayer`, open sections |
-
-### Signature interaction
-
-**Chart hover → the readout follows the cursor.** Hovering the hero plot re-reads the
-month under the pointer: the eyebrow switches to `9月 读数`, the amount, the pipeline and
-the coverage ratio all move with it, and clicking **pins** that month (a real button,
-`回到当月`, releases it). It is the one motion the page is built around — everything else
-stays still.
-
-### AI is derived, live is real
-
-Two rules keep the product honest:
-
-- **Insight is derived.** `lib/insights.ts` computes growth attribution, risk exposure
-  (`金额 × 停滞天数`) and opportunity urgency (`金额 × (1 + 停滞天数/10)`) from the same
-  customers the rest of the page renders. Change the data and the company names, amounts,
-  percentages and stale-day counts in the sentences change with it. No external API, no
-  network, deterministic output.
-- **Live is real.** The live layer streams the actual activity records on a bounded queue
-  (one every 8 s, newest five kept), stamps a real client clock, says so when the queue is
-  exhausted instead of looping, and its replay button genuinely resets it.
-
-**`Card` is a scarce resource.** Use it only where content genuinely floats above another
-layer: dialogs, drawers, popovers, tooltips, drag previews. If a block needs weight but
-not elevation, use an open section. `StatsCard` / `ChartCard` remain in the library as the
-card-shaped variants — they are simply not the default any more.
-
-### Tokens (`app/globals.css`)
-
-| Group | Tokens |
-| --- | --- |
-| Colour roles | `background` · `surface` · `elevated` · `interactive` · `foreground` · `muted` · `border` · `hairline` · `accent` · `accent-soft` · `brand` · `data-accent` · `success` · `warning` · `danger` · `info` (each with a `-soft` where it matters) |
-| Typography | `text-display` · `text-title` · `text-subtitle` · `text-heading` · `text-body` · `text-body-sm` · `text-caption` · `text-label` · `text-eyebrow` · `text-metric` · `text-metric-sm` · `text-numeric` + the `.numeric` / `.eyebrow` utilities |
-| Radius | `rounded-field` (controls) · `rounded-card` · `rounded-panel` · `rounded-floating` |
-| Elevation | `shadow-subtle` · `shadow-card` · `shadow-elevated` · `shadow-floating` — Light and Dark differ |
-| Motion | `duration-instant/fast/normal/slow/glacial` + `duration-press/hover/enter/exit/modal/drawer/list/page`; `ease-standard/out-expo/out-back/spring/emphasized` |
-| Ambient | `ambient-grid` · `ambient-wash` · `hero-wash` · `chart-glow` · `surface-sheen` · `kbd-chip` · `section-tick` · `live-halo` |
-| Hero surface | `--hero-base` · `--ambient-hero-brand` · `--ambient-hero-warm` — the hero reads its **own** ambient tokens, so Dark can be pushed further without dragging every other wash along |
-
-Rules: never hardcode a colour, duration or easing outside the token layer; pick motion by
-**intent** (`motion.enter`, `motion.press`) rather than by feel.
-
-### Colour direction
-
-Two hues are owned by the product: **deep cobalt** (`--brand`) and a **controlled cyan**
-(`--data-accent`). Chart series 1–2 are that pair; series 3–5 are semantic colours
-reserved for status (合作中 / 逾期 / 流失风险). No decorative rainbow, no AI purple, no
-random pastels.
-
-### Typography — the CJK rule
-
-Chinese glyphs are full-width and square. Negative tracking that flatters Latin display
-type makes 中文 look cramped, so **letter-spacing is 0 on every token that carries
-Chinese** and negative tracking lives only on the numeric tokens (`text-metric`,
-`text-numeric`, `.numeric`), whose glyphs are half-width digits. Line-heights are higher
-than a Latin-only scale would use — 1.05 on a 56px Chinese headline clips the glyphs.
-The font stack leads with Geist and then falls through PingFang / Hiragino / YaHei / Noto
-so 中文 is never synthesised from a Latin face.
-
-### Themes
-
-- **Light** — cool off-white canvas (`--background` is a blue-tinted grey, not white),
-  pure-white surfaces. The gap between the two is wide enough that a surface reads as
-  elevated *without* a border, which is what lets the layout drop most card outlines.
-- **Dark** — layered charcoal over a navy undertone. The three surface steps
-  (0.152 → 0.202 → 0.238) are deliberately wide apart so elevation reads as luminance, not
-  as a border. One controlled ambient bloom per screen, a faint grid, and a single chart
-  glow — never purple, never neon, never glass everywhere. Dark is allowed to be **more**
-  expressive than Light: the hero sinks *below* the page (`.dark --hero-base` is deeper
-  than `--background`) so the brand blue can come through it. Expressiveness comes from
-  depth, not from turning the glow up.
-
-### Ambient layer
-
-`components/prototype/ambient-backdrop.tsx` (page-level) and
-`components/prototype/open-section.tsx` (region-level) are the only places that add
-decoration. **One light source per screen**: pages that carry their own hero turn the
-global backdrop off (`<CrmDataBoundary ambient={false}>`) so two washes never cancel out.
-
-### i18n (`lib/i18n/`)
-
-```ts
-// lib/i18n/zh-CN.ts   — the reference dictionary (source of truth for the shape)
-// lib/i18n/index.ts   — locale registry, `getMessages`, `messages` (non-hook accessor)
-// components/i18n/    — <LocaleProvider>, useMessages(), useLocale()
-```
-
-```tsx
-const t = useMessages()
-return <h1>{t.page.dashboard.title}</h1>
-```
-
-Adding `en-US`: create `lib/i18n/en-US.ts` typed as `Messages`, append `"en-US"` to
-`LOCALES` and the dictionary map. No component changes.
-
-**Dictionary = interface copy.** Record content (customer names, notes, amounts) lives in
-`lib/crm-data.ts` / `lib/mock-data.ts` and is intentionally *not* translated. Route slugs
-stay English.
-
-`tests/support/localization.ts` holds the single allow-list for Latin text (brand names,
-URLs, emails, tech-stack names, keyboard shortcuts) and the visible-text scanner; the
-specs assert **zero** non-allow-listed English on `/`, `/demo` and every `/crm` route,
-including dialogs, drawers, menus and the command palette.
-
-## Structure
-
-```
-app/                     # routes: / (landing), /demo (demo dashboard), /crm (AI CRM)
-  crm/                   #   /crm · /crm/customers · /crm/customers/[id] · /crm/opportunities · /crm/tasks · /crm/activities
-  crm/_components/       #   revenue-hero · ai-insight-layer · opportunity-spotlight · live-data-layer · crm-shell
-components/
-  ui/                    # shadcn/ui primitives (Base UI "base-nova" style)
-  prototype/             # reusable product components
-  motion/                # Motion-based animation components
-  layout/                # Sidebar, TopNav, MobileNav, PageContainer
-  i18n/                  # LocaleProvider, useMessages()
-hooks/                   # useMediaQuery, useDebouncedValue, useHotkey
-lib/
-  i18n/                  # dictionaries (zh-CN) + locale registry
-  crm-data.ts            # AI CRM mock records (Chinese business data)
-  mock-data.ts           # demo workspace mock records (Chinese business data)
-  activity-groups.ts     # shared day-bucketing for the activity timelines
-  insights.ts            # deterministic growth / risk / opportunity derivation (the "AI")
-  format.ts              # money / number / date formatting + personInitials
-  motion-presets.ts      # JS mirror of the motion tokens
-stores/                  # Zustand stores (dashboard demo + CRM)
-tests/                   # Playwright e2e specs
-  support/               # shared test helpers (English allow-list + text scanner)
-skills/                  # agent skills (interactive-prototype, git-delivery)
-```
-
-## Stack notes
-
-- **shadcn/ui "base-nova"** is built on **Base UI**, not Radix — use the `render` prop
-  instead of `asChild`, `swipeDirection` on Drawer, `(value) => …` children on `Select.Value`.
-- **Next.js 16** has breaking changes; read `node_modules/next/dist/docs/` when in doubt
-  (`next lint` is gone, `params` is async, Turbopack is the default bundler).
-- **Zustand**: selectors must return stable references — derive with `useMemo` in
-  components, never create arrays/objects inside selectors.
-
-## Agent Development Workflow
-
-The standard loop every prototype goes through (see `skills/interactive-prototype/SKILL.md`):
-
-```
-Understand → Inspect → Plan → Build → Run → Browser Validate → Fix → Polish → Test → Git Delivery
-```
-
-After Build, keep the **Browser QA Loop** running until it converges:
-
-```
-Implement → Run → Browser → Interact → Inspect → Detect → Fix → Browser again → Test
-```
-
-Important interactions are validated in a real browser — execute the key user flows,
-inspect the results and console errors, screenshot when needed — not only by reading code.
-
-## Git Branch Workflow
-
-```
-main → feature/<name> → development → QA → commit → push → Vercel Preview → human review → merge main
-```
-
-- `main` = the stable, demoable, deployable baseline
-- `feature/*` = prototype development — **one prototype per feature branch**
-- Agents never develop directly on `main` and never merge to `main` by default
-- Full git safety rules (blacklisted commands, commit/push/merge rules) live in `AGENTS.md`;
-  the delivery checklist lives in `skills/git-delivery/SKILL.md`
-
-## Example
-
-Creating an "AI CRM" prototype:
-
-```bash
-git status                     # confirm no uncommitted user changes
-git checkout main
-git pull --ff-only origin main
-git checkout -b feature/ai-crm
-git branch --show-current      # must be feature/ai-crm
-```
-
-After development:
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
+pnpm dev --port 3210   # http://localhost:3210
+pnpm test              # Playwright（自动起 3210 端口的 dev server）
 pnpm build
 ```
 
-Then:
+## 产品信息架构
 
-```bash
-git status
-git diff --stat
-git diff
-git add <explicit-files>
-git commit -m "feat: add ai crm prototype"
-git push -u origin feature/ai-crm
+| 路由 | 页面 | 第一视觉 / 主角 |
+| --- | --- | --- |
+| `/finance` | 财务总览 | 现金跑道仪表（签名视觉）+ 推导洞察 |
+| `/finance/cashflow` | 现金流 | 90 天推演 + 13 周可核对明细 + 账户分布 |
+| `/finance/analysis` | 收支分析 | 收入 / 支出构成条 + 科目下钻 + 对手方排行 |
+| `/finance/budget` | 预算执行 | 整体执行率 + 一条执行条 + 科目排行 |
+| `/finance/insights` | AI 财务洞察 | 结论清单（每条附判定规则与依据） |
+| `/finance/risks` | 风险与异常 | 风险敞口 + 应收账龄 + 异常支出 |
+| `/finance/transactions` | 交易流水 | 账本（筛选 / 分页 / 凭证抽屉） |
+| `⌘K` | **Command Center** | 导航 / 交易检索 / 智能指令 / 操作 |
+
+## 签名视觉：Cash Runway Instrument
+
+`app/finance/_components/cash-runway-hero.tsx`
+
+1. **大数字与图形共面**：现金头寸（`text-metric`）在左，90 天推演在右，底部是同一条地平线（运营备付金警戒线）。
+2. **区间是算出来的**：压力与优化两种情景各跑一遍同一套预测规则，两者之间就是那条带——可复算，不是装饰性阴影。
+3. **假设可以被拖动**：`收入达成率 × 成本系数 × 回款率` → 月均净流出 → 跑道月数 → 警戒线日期。滑杆是原生 `range`，样式只取令牌。
+
+基准读数：**¥842 万现金 · 14.8 个月跑道 · 2027 年 10 月触及警戒线**。
+
+## AI Layer：不是聊天框
+
+`lib/finance-insights.ts` —— **确定性推导，同输入同输出，不调用任何模型**。
+
+七类结论：科目异常增长、预算超支、回款风险、现金流压力、成本优化机会、供应商集中度、情景推演。
+每一条都带四样东西：**事实**（金额 / 百分比 / 日期 / 实体）、**影响金额**（决定排序）、
+**依据条数**、**去处**（凭证抽屉 / 发票详情 / 筛选好的页面）。
+
+例如：
+
+> 2026年9月研发与工具支出 ¥41.2万，上月为 ¥21.4万，环比增加 92.5%。
+
+这句话里的每个数字都来自账本，不是文案。改 `lib/finance-data.ts` 里的矩阵，句子自己会变。
+
+## 数据模型：一个账本
+
+```
+lib/finance-data.ts     事实：12 个月 × 5 条收入线 × 8 个支出科目、供应商占比、4 个账户、
+                             客户回款纪律、账期规则、季度预算
+        ↓ 展开
+lib/finance-ledger.ts   ~900 笔现金流水、应收发票、应付账单、内部资金调拨、账户余额
+        ↓ 推导
+lib/finance-metrics.ts  月度序列、跑道、90 天预测、预算执行、账龄、筛选与分页
+        ↓ 结论
+lib/finance-insights.ts 七类洞察
 ```
 
-Then: GitHub → Vercel → Preview URL. After human confirmation of the preview, consider
-merging `feature/ai-crm` into `main` — only when the user explicitly asks.
+三条恒等式（`tests/finance-data.spec.ts` 精确断言）：
 
-## New Prototype Standard Flow
+- 支出矩阵 = 已付供应商款 + 未付应付
+- 收入矩阵 = 已收现金 + 未回款应收
+- 账户期末余额 = 期初 + 全部经营收付（内部调拨不计入经营现金流，但仍改变单个账户余额）
 
-1. Update `main`
-2. Create the feature branch
-3. Understand the requirement
-4. Inspect
-5. Plan
-6. Build
-7. Run
-8. Browser QA
-9. Fix
-10. Polish
-11. Playwright
-12. `pnpm lint`
-13. `pnpm typecheck`
-14. `pnpm build`
-15. Diff review
-16. Commit
-17. Push
-18. Vercel Preview
-19. Human confirmation
-20. Merge into `main` (only when the user asks)
+因此"每个图表各造一份数"在结构上不可能发生：**现金头寸、月度序列、预算实际发生额、
+账龄、凭证金额全部来自同一份流水**。
+
+## 设计系统 V5 — Financial Instrument
+
+- **画布**：暖白纸（不是冷灰）——读的是报表，不是控制台。
+- **两个产品色**：深青 `--brand`（机构感，刻意不用"AI 紫"）+ 黄铜 `--data-accent`（预算与预测）。
+- **图表语义色**：`--data-income` 青 / `--data-expense` 陶土橙 / `--data-budget` 黄铜 / `--data-risk` 红。
+  同一张图里的每个颜色都在回答"这条线是什么"。
+- **更紧的圆角**（`--radius: 0.5rem`）：这是一台仪表，不是一组卡片。
+- **Light**：暖白纸 + 纯白面，靠亮度差分层而不靠描边。**Dark**：石墨底 + 下沉的 Hero，深青从中透出来。
+- **一屏一个光源**：带 Hero 的页面关掉全局环境光。
+
+排版沿用工厂的中文红线：中文不加负字距、行高高于拉丁方案、字体栈以 Geist 起头回落 PingFang/YaHei。
+
+## 本地化
+
+默认 `zh-CN`，词典在 `lib/i18n/zh-CN.ts`。
+`app/**` 与 `components/**` 里**没有**硬编码的用户可见文案；新增语言只需要加一个同形状的文件。
+`tests/localization.spec.ts` 断言落地页与全部财务路由（含浮层）零英文泄漏——允许列表集中在
+`tests/support/localization.ts`（品牌名、邮箱、SaaS 供应商产品名、凭证号、快捷键）。
+
+## 响应式
+
+| | 1440×900 | 390×844 |
+| --- | --- | --- |
+| 导航 | 固定 Sidebar + TopNav | 顶栏 + 抽屉导航 |
+| 跑道 | 数字与图形左右共面 | 数字 → 图形 → 假设面板（重新排序，不是压缩） |
+| 明细 | 表格 / 多栏 | 两行记录 / 单列 |
+| 命中区 | — | ≥ 24px |
+
+`tests/finance-responsive.spec.ts` 覆盖七个路由在两种视口下的横向溢出、导航形态与命中区。
+
+## 测试
+
+```bash
+pnpm test    # 119 个 Playwright 断言，8 个 spec
+```
+
+| spec | 覆盖 |
+| --- | --- |
+| `finance-data.spec.ts` | 账本恒等式、派生指标一致性、确定性（不打开浏览器） |
+| `finance-overview.spec.ts` | 跑道读数、图形读数、假设重算、洞察层、记录层 |
+| `finance-navigation.spec.ts` | 七个深链、侧栏导航、404、三态、主题、账户菜单 |
+| `finance-ledger.spec.ts` | 筛选 / 搜索 / 分页 / 凭证抽屉 / 登记一笔收支 |
+| `finance-budget.spec.ts` | 执行率、科目排行、只看超支、部门维度、下钻 |
+| `finance-risks.spec.ts` | 账龄分桶筛选、敞口清单、发票详情、异常支出 |
+| `finance-command.spec.ts` | 命令中心四组、账本检索、智能指令、AI 模式 |
+| `finance-responsive.spec.ts` | 1440×900 / 390×844、命中区、重排 |
+| `localization.spec.ts` | 全部路由与浮层的零英文泄漏审查 |
+
+## Factory 出身
+
+本项目由 **Prototype Factory v1.0.0**（`prototype-starter@v1.0.0`）生产：
+
+- **保留**：设计令牌层与语义命名、motion presets、i18n 架构、`components/prototype` 与
+  `components/motion` 与 `components/layout`、Playwright 装置、AGENTS.md/Skills 的规则体系。
+- **有选择地复用并改造**：TopNav / Sidebar 去掉了对上一个产品 store 的耦合（数据源由调用方注入）、
+  `SectionHeading` 的操作区在移动端独占一行、命令中心泛化为"注入式分组"。
+- **移除**：上一个产品的全部业务实现（页面、数据、store、洞察与测试）。
+
+换句话说：**工厂提供基础设施与设计语言，产品提供构图与事实。**
+
+## 结构
+
+```
+app/
+  finance/                    # 七个路由 + 外壳
+    _components/              # 跑道仪表、洞察层、账本、预算、风险、抽屉与对话框
+  page.tsx                    # 落地页（数字与产品内一致）
+lib/
+  finance-data.ts             # 事实
+  finance-ledger.ts           # 展开成流水
+  finance-metrics.ts          # 派生指标
+  finance-insights.ts         # 确定性洞察
+  format.ts / motion-presets.ts / i18n/
+stores/finance-store.ts       # 用户改了什麼（假设 / 筛选 / 分页 / 选中记录）
+components/                   # 从工厂继承的复用件
+tests/                        # 8 个 spec
+.qa/shots.mjs                 # Browser QA 截图与错误检查
+```

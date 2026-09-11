@@ -1,6 +1,6 @@
 ---
 name: git-delivery
-description: 在 Prototype Starter 中完成 Prototype 开发后执行 Git 交付的标准工作流：Inspect → Branch Check → Diff Review → Quality Gates → Commit → Push → Preview。适用于 task 明确要求 delivery / publish，或用户明确要求 push 的交付任务。默认不 push、不 push main、不自动 merge。
+description: 在 prototype-ai-finance 中完成 Prototype 开发后执行 Git 交付的标准工作流：Inspect → Branch Check → Diff Review → Quality Gates → Commit → Push → Preview。适用于 task 明确要求 delivery / publish，或用户明确要求 push 的交付任务。默认不 push、不 push main、不自动 merge。
 ---
 
 # Git Delivery Skill
@@ -36,7 +36,7 @@ git remote -v
 - 确认当前 branch。
 - 新 Prototype 如果仍在 `main`：**先在 main 上创建 `feature/<name>`**（先 `git pull --ff-only origin main` 更新基线），不要把开发直接留在 main。
   ```bash
-  git checkout -b feature/<name>   # e.g. feature/ai-crm
+  git checkout -b feature/<name>   # e.g. feature/ai-finance-v1
   git branch --show-current        # 必须是 feature/<name>
   ```
 - 已经在其他 feature branch：不要把新 Prototype 混进去，先停止并报告；不自动删除旧 branch。
@@ -74,9 +74,9 @@ pnpm build
 commit 前再次 `git status`。创建清晰的 commit，例如：
 
 ```
-feat: add ai crm prototype
+feat: add ai finance prototype
 fix: improve mobile layout
-test: add dashboard interaction coverage
+test: add ledger interaction coverage
 ```
 
 - 用 `git add <explicit-files>`，不要盲目 `git add -A`。

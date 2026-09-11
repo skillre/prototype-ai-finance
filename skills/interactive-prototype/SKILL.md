@@ -1,6 +1,6 @@
 ---
 name: interactive-prototype
-description: 在本项目（Prototype Starter，Next.js 16 + shadcn/base-nova + Motion + Zustand）中开发高保真 Interactive Prototype 的标准工作流：Understand → Inspect → Plan → Build → Run → Browser Validate → Fix → Polish → Test，完成后交给 git-delivery Skill 交付。适用于所有交互式原型/演示页开发任务。
+description: 在本项目（智悟云 · AI 财务工作台，Next.js 16 + shadcn/base-nova + Motion + Zustand）中开发高保真 Interactive Prototype 的标准工作流：Understand → Inspect → Plan → Build → Run → Browser Validate → Fix → Polish → Test，完成后交给 git-delivery Skill 交付。适用于所有交互式原型/演示页开发任务。
 ---
 
 # Interactive Prototype 开发 Skill
@@ -14,7 +14,7 @@ description: 在本项目（Prototype Starter，Next.js 16 + shadcn/base-nova + 
 1. 先读 `AGENTS.md`（含 Next.js 16 的版本注意点、Quality Gates 与 Git 规则）。
 2. 只做 Frontend + local state + realistic mock data；**禁止** Database / Supabase / Auth / Docker / Kubernetes / Monorepo / Backend / CI 自动化。
 3. 组件库：`components/ui`（shadcn base-nova，**Base UI**：`render` prop 代替 `asChild`）、`components/prototype`、`components/motion`、`components/layout`。
-4. 数据：`lib/mock-data.ts` 的 realistic mock data；禁用 lorem ipsum。
+4. 数据：`lib/finance-data.ts`（事实）→ `lib/finance-ledger.ts`（流水）→ `lib/finance-metrics.ts`（派生）→ `lib/finance-insights.ts`（结论）；禁用 lorem ipsum，禁止为单个图表造数。
 5. 视觉：只使用 `app/globals.css` 的 design token 与 `lib/motion-presets.ts` 的时长/缓动。
 
 ## 工作流（逐阶段执行，不跳步）
@@ -59,7 +59,7 @@ description: 在本项目（Prototype Starter，Next.js 16 + shadcn/base-nova + 
 
 ### 5. Run
 
-- `pnpm dev` 启动真实应用（http://localhost:3000，demo 在 /demo），确认无编译错误。
+- `pnpm dev --port 3210` 启动真实应用（http://localhost:3210，财务工作台在 /finance），确认无编译错误。
 
 ### 6. Browser Validate
 
@@ -71,7 +71,7 @@ description: 在本项目（Prototype Starter，Next.js 16 + shadcn/base-nova + 
 - 必要时**截图**存档；
 - loading / empty / error 状态可触发且表现正确。
 
-工具：浏览器手工走查，或补充 `tests/demo.spec.ts` / 新建 spec 的端到端测试。
+工具：浏览器手工走查、`node .qa/shots.mjs` 批量截图，或补充 `tests/finance-*.spec.ts` 的端到端测试。
 
 ### 7. Fix
 
@@ -130,6 +130,6 @@ Implement → Run → Browser → Interact → Inspect → Detect → Fix → Br
 - `app/globals.css` — design tokens
 - `lib/motion-presets.ts` — motion durations/easings
 - `components/prototype/*` — 可复用产品组件
-- `stores/dashboard-store.ts` — zustand 模式参考
-- `playwright.config.ts` + `tests/*.spec.ts` — e2e 模式参考
+- `stores/finance-store.ts` — zustand 模式参考（假设 / 筛选 / 分页）
+- `playwright.config.ts` + `tests/*.spec.ts` — e2e 模式参考（3210 端口，独立于其它原型）
 - `skills/git-delivery/SKILL.md` — Git 交付工作流
