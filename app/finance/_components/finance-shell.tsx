@@ -19,6 +19,7 @@ import {
   RotateCwIcon,
   ScanSearchIcon,
   ShieldAlertIcon,
+  SparklesIcon,
   SunIcon,
   TargetIcon,
   TriangleAlertIcon,
@@ -534,26 +535,52 @@ export function FinanceShell({ children }: { children: React.ReactNode }) {
           onOpenAccount={() => setProfileOpen(true)}
           accountHint={t.shell.accountHint}
           utilities={
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-label={t.a11y.openCommand}
-                    data-testid="sidebar-command"
-                    onClick={() => openCommandPalette("search")}
-                    className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
-                  />
-                }
-              >
-                <CommandIcon className="size-4" />
-                <span className="text-label">{t.nav.commandCenter}</span>
-                <kbd className="kbd-chip ml-auto">⌘K</kbd>
-              </TooltipTrigger>
-              <TooltipContent side="top">{t.a11y.commandHint}</TooltipContent>
-            </Tooltip>
+            <div className="flex w-full flex-col gap-0.5">
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={t.a11y.openCommand}
+                      data-testid="sidebar-command"
+                      onClick={() => openCommandPalette("search")}
+                      className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+                    />
+                  }
+                >
+                  <CommandIcon className="size-4" />
+                  <span className="text-label">{t.nav.commandCenter}</span>
+                  <kbd className="kbd-chip ml-auto">⌘K</kbd>
+                </TooltipTrigger>
+                <TooltipContent side="top">{t.a11y.commandHint}</TooltipContent>
+              </Tooltip>
+
+              {/*
+                AI 模式不是装饰：它把"智能指令"提到最前，并把占位文案换成提问语气。
+                没有这个入口，CommandPalette 的 ai 模式就永远不会被打开。
+              */}
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      aria-label={t.palette.aiPlaceholder}
+                      data-testid="sidebar-ai-command"
+                      onClick={() => openCommandPalette("ai")}
+                      className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+                    />
+                  }
+                >
+                  <SparklesIcon className="size-4" />
+                  <span className="text-label">{t.nav.insights}</span>
+                </TooltipTrigger>
+                <TooltipContent side="top">{t.palette.aiPlaceholder}</TooltipContent>
+              </Tooltip>
+            </div>
           }
         />
 

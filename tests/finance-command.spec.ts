@@ -92,6 +92,16 @@ test.describe("命令中心", () => {
     await expect(palette.getByRole("combobox")).toHaveValue("")
   })
 
+  test("侧栏的智能指令入口打开 AI 模式", async ({ page }) => {
+    await openLedger(page, "/finance")
+    await page.getByTestId("sidebar-ai-command").click()
+    const palette = page.getByTestId("command-palette")
+    await expect(palette).toBeVisible()
+    // AI 模式有专属标识，且占位文案换成提问语气
+    await expect(page.getByTestId("command-palette-ai")).toBeVisible()
+    await expect(palette).toContainText("智能指令")
+  })
+
   test("侧栏底部的命令入口同样可用", async ({ page }) => {
     await openLedger(page, "/finance")
     await page.getByTestId("sidebar-command").click()
