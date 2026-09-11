@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: messages.notFound.app.metaTitle }
 const t = messages.notFound.app
 
 /**
- * 全站 404。未匹配的 URL（例如 /crm/whatever）由这里兜底，
+ * 全站 404。未匹配的 URL（例如 /finance/whatever 之外的路径）由这里兜底，
  * 永远给出真实可用的下一步，避免死胡同。
  */
 export default function AppNotFound() {
@@ -21,11 +21,11 @@ export default function AppNotFound() {
           testId="app-not-found"
           title={t.title}
           description={t.description}
-          action={{ label: t.action, href: "/crm" }}
+          action={{ label: t.action, href: "/finance" }}
           suggestions={[
-            { label: messages.nav.customers, href: "/crm/customers" },
-            { label: messages.nav.tasks, href: "/crm/tasks" },
-            { label: messages.nav.activities, href: "/crm/activities" },
+            { label: messages.nav.cashflow, href: "/finance/cashflow" },
+            { label: messages.nav.insights, href: "/finance/insights" },
+            { label: messages.nav.transactions, href: "/finance/transactions" },
           ]}
         />
         <div className="mt-6 flex justify-center">

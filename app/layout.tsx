@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "原型工作台 Prototype Starter", template: "%s · 原型工作台" },
+  title: { default: "智悟云 · AI 财务工作台", template: "%s · 智悟云财务" },
   description:
-    "面向 AI Agent 的高保真交互原型 Starter：Next.js + shadcn/ui + Motion + Zustand + Playwright。",
+    "AI-native financial command center：现金跑道、现金流推演、预算执行与确定性财务洞察。",
 };
 
 // 在水合前应用主题 class，避免闪烁。
