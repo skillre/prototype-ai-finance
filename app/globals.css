@@ -41,6 +41,15 @@
   --color-data-accent: var(--data-accent);
   --color-data-accent-soft: var(--data-accent-soft);
 
+  /* ---- Color: 图表语言 --------------------------------------------------- */
+  /* 收入 / 支出 / 预算 / 风险 四个语义色。图表里出现的每一个颜色都在回答
+     "这条线是什么"，而不是"这个系列排第几"。 */
+  --color-data-income: var(--data-income);
+  --color-data-expense: var(--data-expense);
+  --color-data-budget: var(--data-budget);
+  --color-data-risk: var(--data-risk);
+  --color-data-neutral: var(--data-neutral);
+
   /* ---- Color: hairline -------------------------------------------------- */
   /* A separator, not a boundary. Lighter than `--border` so structure can be
      drawn with spacing + rules instead of with boxes. */
@@ -246,50 +255,69 @@
   --transition-duration-page: var(--duration-page);
 }
 
+/* =============================================================================
+ * AI Finance —— token 层。
+ *
+ * 与 Factory 的 V4 共用同一套**语义令牌名**（background / surface / elevated /
+ * brand / data-accent / success / warning / danger / info / chart-1..5 /
+ * elevation-* / ambient-*），换的是这一版产品的语气：
+ *
+ *   • 画布是**暖白纸**，不是冷灰 —— 财务读的是"报表"，不是"控制台"。
+ *   • 品牌色是**深青**（institutional teal），第二色是**黄铜**（brass）。
+ *     不用钴蓝，也不用 AI 紫：这两个色属于财务，不属于上一版产品。
+ *   • 图表有一套自己的语义色：收入=青、支出=陶土橙、预算=黄铜、风险=红。
+ *     同一张图里出现的每个颜色都在回答"这条线是什么"。
+ *   • 圆角比 V4 更紧（0.5rem），因为这是一台**仪表**，不是一组卡片。
+ * ========================================================================== */
 :root {
-  /* ---- Brand ------------------------------------------------------------ */
-  /* Deep cobalt. Calm, enterprise, deliberately not "AI purple". */
-  --brand: oklch(0.5 0.16 254);
+  /* ---- Brand —— 深青：稳重、机构感、与"AI 紫"划清界限 ---------------- */
+  --brand: oklch(0.44 0.085 196);
   --brand-foreground: oklch(0.99 0 0);
-  --brand-soft: oklch(0.951 0.025 254);
+  --brand-soft: oklch(0.944 0.022 196);
 
-  /* ---- Data accent — controlled electric cyan --------------------------- */
-  --data-accent: oklch(0.6 0.125 218);
-  --data-accent-soft: oklch(0.95 0.03 218);
+  /* ---- Data accent —— 黄铜：预算、预测与"第二参考系" ------------------ */
+  --data-accent: oklch(0.66 0.115 72);
+  --data-accent-soft: oklch(0.955 0.03 78);
 
-  /* ---- Surfaces --------------------------------------------------------- */
-  /* Cool off-white page, pure-white surface. The gap between the two is wide
-     enough that a panel reads as elevated WITHOUT a border — that is what
-     lets the redesign replace most card outlines with spacing. */
-  --background: oklch(0.982 0.005 252);
-  --foreground: oklch(0.175 0.016 262);
+  /* ---- Data semantics —— 图表语言 ------------------------------------- */
+  /* 收入用品牌青；支出用陶土橙；预算用黄铜；风险用红。 */
+  --data-income: oklch(0.44 0.085 196);
+  --data-expense: oklch(0.585 0.13 42);
+  --data-budget: oklch(0.66 0.115 72);
+  --data-risk: oklch(0.56 0.19 25);
+  --data-neutral: oklch(0.62 0.03 250);
+
+  /* ---- Surfaces —— 暖白纸 + 纯白面 ------------------------------------ */
+  /* 画布与表面之间留出足够落差，于是"一块内容浮起来了"可以**不靠边框**。 */
+  --background: oklch(0.985 0.004 96);
+  --foreground: oklch(0.19 0.012 252);
   --surface: oklch(1 0 0);
-  --surface-foreground: oklch(0.175 0.016 262);
+  --surface-foreground: oklch(0.19 0.012 252);
   --elevated: oklch(1 0 0);
-  --elevated-foreground: oklch(0.175 0.016 262);
-  --interactive: oklch(0.962 0.007 254);
-  --muted: oklch(0.966 0.006 254);
-  --muted-foreground: oklch(0.498 0.018 260);
-  --border: oklch(0.926 0.008 258);
-  --input: oklch(0.916 0.009 258);
-  /* Separators only. Never used as a container outline. */
-  --hairline: oklch(0.938 0.006 256);
-  --ring: oklch(0.58 0.14 254);
+  --elevated-foreground: oklch(0.19 0.012 252);
+  --interactive: oklch(0.963 0.005 140);
+  --muted: oklch(0.966 0.005 140);
+  --muted-foreground: oklch(0.502 0.012 250);
+  --border: oklch(0.922 0.006 140);
+  --input: oklch(0.912 0.007 140);
+  /* 分隔线，不是容器轮廓。 */
+  --hairline: oklch(0.934 0.005 140);
+  --ring: oklch(0.52 0.09 196);
 
-  /* ---- Accents ---------------------------------------------------------- */
-  --accent: oklch(0.962 0.008 254);
-  --accent-foreground: oklch(0.24 0.02 260);
-  --accent-soft: oklch(0.952 0.022 254);
+  /* ---- Accents --------------------------------------------------------- */
+  --accent: oklch(0.962 0.006 160);
+  --accent-foreground: oklch(0.25 0.015 250);
+  --accent-soft: oklch(0.95 0.02 196);
 
-  /* ---- Status ----------------------------------------------------------- */
-  --success: oklch(0.54 0.13 158);
-  --success-soft: oklch(0.958 0.032 158);
-  --warning: oklch(0.62 0.135 74);
-  --warning-soft: oklch(0.962 0.042 82);
-  --danger: oklch(0.565 0.19 22);
-  --danger-soft: oklch(0.96 0.032 22);
-  --info: oklch(0.55 0.12 236);
-  --info-soft: oklch(0.956 0.03 236);
+  /* ---- Status —— 与图表语言同源，避免"同一个红有两个意思" ------------- */
+  --success: oklch(0.55 0.12 155);
+  --success-soft: oklch(0.958 0.03 155);
+  --warning: oklch(0.68 0.145 58);
+  --warning-soft: oklch(0.962 0.045 62);
+  --danger: oklch(0.56 0.19 25);
+  --danger-soft: oklch(0.96 0.032 25);
+  --info: oklch(0.56 0.1 244);
+  --info-soft: oklch(0.956 0.028 244);
 
   /* ---- shadcn primitive bridge ------------------------------------------ */
   --card: var(--surface);
@@ -298,51 +326,51 @@
   --popover-foreground: var(--elevated-foreground);
   --primary: var(--brand);
   --primary-foreground: var(--brand-foreground);
-  --secondary: oklch(0.962 0.008 254);
-  --secondary-foreground: oklch(0.24 0.02 260);
+  --secondary: oklch(0.962 0.006 160);
+  --secondary-foreground: oklch(0.25 0.015 250);
   --destructive: var(--danger);
 
-  /* ---- Charts — cobalt → cyan, then semantic only ----------------------- */
-  /* Series 1 and 2 are the product's own two hues; 3–5 are semantic colours
-     reserved for status (合作中 / 逾期 / 流失风险). No decorative rainbow. */
-  --chart-1: oklch(0.5 0.16 254);
-  --chart-2: oklch(0.6 0.125 218);
-  --chart-3: oklch(0.56 0.13 158);
-  --chart-4: oklch(0.68 0.14 76);
-  --chart-5: oklch(0.58 0.175 22);
+  /* ---- Charts —— 青 → 黄铜 → 陶土 → 靛 → 红 --------------------------- */
+  --chart-1: oklch(0.44 0.085 196);
+  --chart-2: oklch(0.66 0.115 72);
+  --chart-3: oklch(0.585 0.13 42);
+  --chart-4: oklch(0.52 0.09 265);
+  --chart-5: oklch(0.56 0.19 25);
 
-  /* ---- Radius ----------------------------------------------------------- */
-  --radius: 0.625rem;
+  /* ---- Radius —— 更紧的圆角：仪表感 ------------------------------------ */
+  --radius: 0.5rem;
 
   /* ---- Elevation — soft, multi-layer, never a single hard drop ---------- */
   --elevation-subtle:
-    0 1px 1px -0.5px oklch(0.19 0.02 262 / 0.05),
-    0 1px 3px oklch(0.19 0.02 262 / 0.04);
+    0 1px 1px -0.5px oklch(0.2 0.015 250 / 0.05),
+    0 1px 3px oklch(0.2 0.015 250 / 0.04);
   --elevation-card:
-    0 1px 1.5px -0.5px oklch(0.19 0.02 262 / 0.05),
-    0 4px 10px -4px oklch(0.19 0.02 262 / 0.06),
-    0 14px 32px -14px oklch(0.19 0.02 262 / 0.07);
+    0 1px 1.5px -0.5px oklch(0.2 0.015 250 / 0.05),
+    0 4px 10px -4px oklch(0.2 0.015 250 / 0.06),
+    0 14px 32px -14px oklch(0.2 0.015 250 / 0.07);
   --elevation-elevated:
-    0 2px 4px -2px oklch(0.19 0.02 262 / 0.06),
-    0 12px 28px -10px oklch(0.19 0.02 262 / 0.1),
-    0 28px 56px -24px oklch(0.19 0.02 262 / 0.1);
+    0 2px 4px -2px oklch(0.2 0.015 250 / 0.06),
+    0 12px 28px -10px oklch(0.2 0.015 250 / 0.1),
+    0 28px 56px -24px oklch(0.2 0.015 250 / 0.1);
   --elevation-floating:
-    0 4px 10px -4px oklch(0.19 0.02 262 / 0.09),
-    0 20px 44px -14px oklch(0.19 0.02 262 / 0.14),
-    0 44px 88px -32px oklch(0.19 0.02 262 / 0.16);
+    0 4px 10px -4px oklch(0.2 0.015 250 / 0.09),
+    0 20px 44px -14px oklch(0.2 0.015 250 / 0.14),
+    0 44px 88px -32px oklch(0.2 0.015 250 / 0.16);
 
   /* ---- Ambient lighting ------------------------------------------------- */
-  /* Hero 的底色：Light 下是一层淡淡的纸白，Dark 下比页面更深——主视觉要能
-     把光"压"出来，而不是靠把整块区域刷亮。 */
-  --hero-base: oklch(1 0 0 / 0.55);
-  --ambient-hero-brand: oklch(0.5 0.16 254 / 0.13);
-  --ambient-hero-warm: oklch(0.6 0.125 218 / 0.1);
-  --ambient-brand: oklch(0.5 0.16 254 / 0.12);
-  --ambient-warm: oklch(0.6 0.125 218 / 0.09);
-  --ambient-grid: oklch(0.19 0.014 260 / 0.035);
-  --ambient-ring: oklch(0.5 0.16 254 / 0.26);
-  /* Chart line glow — one controlled bloom, hero chart only. */
-  --chart-glow: oklch(0.5 0.16 254 / 0.28);
+  /* 主视觉的底色：Light 下是一层纸白，Dark 下沉到页面之下，让青从中透出来。 */
+  --hero-base: oklch(1 0 0 / 0.6);
+  --ambient-hero-brand: oklch(0.44 0.085 196 / 0.14);
+  --ambient-hero-warm: oklch(0.66 0.115 72 / 0.09);
+  --ambient-brand: oklch(0.44 0.085 196 / 0.12);
+  --ambient-warm: oklch(0.66 0.115 72 / 0.08);
+  --ambient-grid: oklch(0.2 0.012 250 / 0.035);
+  --ambient-ring: oklch(0.44 0.085 196 / 0.26);
+  /* 唯一一处光晕：预测主线，用来指出"这一条才是主结论"。 */
+  --chart-glow: oklch(0.44 0.085 196 / 0.26);
+  /* 跑道仪表的地平线（警戒线）——它不是错误色，是一条必须被看见的基线。 */
+  --runway-floor: oklch(0.56 0.19 25 / 0.55);
+  --runway-band: oklch(0.66 0.115 72 / 0.12);
 
   /* ---- Motion easings --------------------------------------------------- */
   --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
@@ -352,71 +380,76 @@
   --motion-ease-emphasized: cubic-bezier(0.2, 0.9, 0.25, 1);
 
   /* ---- Sidebar surfaces ------------------------------------------------- */
-  --sidebar: oklch(0.968 0.007 252);
-  --sidebar-foreground: oklch(0.22 0.018 260);
+  --sidebar: oklch(0.972 0.005 120);
+  --sidebar-foreground: oklch(0.23 0.012 250);
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: var(--brand-foreground);
-  --sidebar-accent: oklch(0.935 0.012 254);
-  --sidebar-accent-foreground: oklch(0.22 0.018 260);
-  --sidebar-border: oklch(0.912 0.008 258);
+  --sidebar-accent: oklch(0.936 0.01 160);
+  --sidebar-accent-foreground: oklch(0.23 0.012 250);
+  --sidebar-border: oklch(0.914 0.007 140);
   --sidebar-ring: var(--ring);
 
   color-scheme: light;
 }
 
 .dark {
-  /* ---- Brand ------------------------------------------------------------ */
-  --brand: oklch(0.72 0.15 250);
-  --brand-foreground: oklch(0.16 0.02 262);
-  --brand-soft: oklch(0.3 0.06 254);
+  /* ---- Brand —— 深色下抬起明度，但保持"青"而不是变成荧光 -------------- */
+  --brand: oklch(0.78 0.1 190);
+  --brand-foreground: oklch(0.17 0.02 250);
+  --brand-soft: oklch(0.295 0.045 196);
 
   /* ---- Data accent ------------------------------------------------------ */
-  --data-accent: oklch(0.78 0.12 200);
-  --data-accent-soft: oklch(0.32 0.045 200);
+  --data-accent: oklch(0.82 0.11 78);
+  --data-accent-soft: oklch(0.335 0.05 78);
 
-  /* ---- Surfaces — layered charcoal over a navy undertone ---------------- */
-  /* The three steps (0.152 → 0.202 → 0.238) are deliberately wider apart than
-     v2's, so a surface separates from the page by luminance instead of by a
-     border. That is what stops "dark SaaS with a theme applied". */
-  --background: oklch(0.152 0.015 264);
-  --foreground: oklch(0.968 0.004 260);
-  --surface: oklch(0.202 0.016 264);
-  --surface-foreground: oklch(0.968 0.004 260);
-  --elevated: oklch(0.238 0.017 264);
-  --elevated-foreground: oklch(0.968 0.004 260);
-  --interactive: oklch(0.272 0.018 264);
-  --muted: oklch(0.252 0.015 264);
-  --muted-foreground: oklch(0.706 0.016 258);
+  /* ---- Data semantics --------------------------------------------------- */
+  --data-income: oklch(0.78 0.1 190);
+  --data-expense: oklch(0.72 0.13 46);
+  --data-budget: oklch(0.82 0.11 78);
+  --data-risk: oklch(0.72 0.16 22);
+  --data-neutral: oklch(0.66 0.03 250);
+
+  /* ---- Surfaces — graphite over a cool undertone ------------------------ */
+  /* 三档（0.165 → 0.215 → 0.252）拉得足够开：面靠亮度分层，而不是靠描边。 */
+  --background: oklch(0.165 0.012 250);
+  --foreground: oklch(0.968 0.004 250);
+  --surface: oklch(0.215 0.013 250);
+  --surface-foreground: oklch(0.968 0.004 250);
+  --elevated: oklch(0.252 0.014 250);
+  --elevated-foreground: oklch(0.968 0.004 250);
+  --interactive: oklch(0.285 0.015 250);
+  --muted: oklch(0.262 0.012 250);
+  --muted-foreground: oklch(0.715 0.012 250);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 13%);
   --hairline: oklch(1 0 0 / 7%);
-  --ring: oklch(0.62 0.14 250);
+  --ring: oklch(0.68 0.1 190);
 
   /* ---- Accents ---------------------------------------------------------- */
-  --accent: oklch(0.278 0.017 264);
-  --accent-foreground: oklch(0.968 0.004 260);
-  --accent-soft: oklch(0.318 0.05 254);
+  --accent: oklch(0.278 0.014 250);
+  --accent-foreground: oklch(0.968 0.004 250);
+  --accent-soft: oklch(0.318 0.05 196);
 
   /* ---- Status ----------------------------------------------------------- */
-  --success: oklch(0.75 0.135 162);
-  --success-soft: oklch(0.312 0.055 162);
-  --warning: oklch(0.81 0.13 82);
-  --warning-soft: oklch(0.33 0.055 82);
-  --danger: oklch(0.72 0.16 20);
-  --danger-soft: oklch(0.325 0.07 20);
-  --info: oklch(0.75 0.11 236);
-  --info-soft: oklch(0.312 0.05 236);
+  --success: oklch(0.75 0.125 158);
+  --success-soft: oklch(0.312 0.052 158);
+  --warning: oklch(0.82 0.13 66);
+  --warning-soft: oklch(0.33 0.055 66);
+  --danger: oklch(0.72 0.16 22);
+  --danger-soft: oklch(0.325 0.07 22);
+  --info: oklch(0.75 0.1 244);
+  --info-soft: oklch(0.312 0.05 244);
 
   /* ---- shadcn primitive bridge ------------------------------------------ */
-  --secondary: oklch(0.264 0.016 264);
-  --secondary-foreground: oklch(0.968 0.004 260);
+  --secondary: oklch(0.264 0.013 250);
+  --secondary-foreground: oklch(0.968 0.004 250);
 
-  /* ---- Charts — brighter so they read on charcoal ----------------------- */
-  --chart-1: oklch(0.72 0.15 250);
-  --chart-2: oklch(0.78 0.12 202);
-  --chart-3: oklch(0.76 0.13 162);
-  --chart-4: oklch(0.83 0.135 82);
-  --chart-5: oklch(0.73 0.155 20);
+  /* ---- Charts ------------------------------------------------------------ */
+  --chart-1: oklch(0.78 0.1 190);
+  --chart-2: oklch(0.82 0.11 78);
+  --chart-3: oklch(0.72 0.13 46);
+  --chart-4: oklch(0.7 0.09 265);
+  --chart-5: oklch(0.72 0.16 22);
 
   /* ---- Elevation — inset hairline + a deep, wide soft shadow ------------ */
   --elevation-subtle:
@@ -435,26 +468,28 @@
     0 8px 20px -6px oklch(0 0 0 / 0.6),
     0 36px 76px -24px oklch(0 0 0 / 0.85);
 
-  /* ---- Ambient lighting — controlled, never a purple haze --------------- */
-  /* Dark 允许比 Light 更有表现力：Hero 沉到页面之下，品牌蓝从中透出来。
-     用"更深的底 + 更亮的光"换语气，而不是加霓虹或紫色。 */
-  --hero-base: oklch(0.122 0.016 264);
-  --ambient-hero-brand: oklch(0.72 0.15 250 / 0.3);
-  --ambient-hero-warm: oklch(0.78 0.12 202 / 0.14);
-  --ambient-brand: oklch(0.72 0.15 250 / 0.16);
-  --ambient-warm: oklch(0.78 0.12 202 / 0.08);
+  /* ---- Ambient — Dark 允许比 Light 更有表现力 --------------------------- */
+  /* Hero 沉到页面之下，深青从中透出来；用"更深的底 + 更亮的光"换语气，
+     而不是加霓虹或紫雾。 */
+  --hero-base: oklch(0.135 0.014 250);
+  --ambient-hero-brand: oklch(0.78 0.1 190 / 0.26);
+  --ambient-hero-warm: oklch(0.82 0.11 78 / 0.12);
+  --ambient-brand: oklch(0.78 0.1 190 / 0.15);
+  --ambient-warm: oklch(0.82 0.11 78 / 0.07);
   --ambient-grid: oklch(1 0 0 / 0.05);
-  --ambient-ring: oklch(0.72 0.15 250 / 0.34);
-  --chart-glow: oklch(0.72 0.15 250 / 0.52);
+  --ambient-ring: oklch(0.78 0.1 190 / 0.32);
+  --chart-glow: oklch(0.78 0.1 190 / 0.45);
+  --runway-floor: oklch(0.72 0.16 22 / 0.6);
+  --runway-band: oklch(0.82 0.11 78 / 0.14);
 
   /* ---- Sidebar surfaces ------------------------------------------------- */
-  /* Slightly darker than the page: the rail recedes, content comes forward. */
-  --sidebar: oklch(0.176 0.016 264);
-  --sidebar-foreground: oklch(0.945 0.005 260);
+  /* 比页面更深：导航后退，内容向前。 */
+  --sidebar: oklch(0.185 0.012 250);
+  --sidebar-foreground: oklch(0.945 0.005 250);
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: var(--brand-foreground);
-  --sidebar-accent: oklch(0.256 0.017 264);
-  --sidebar-accent-foreground: oklch(0.978 0.004 260);
+  --sidebar-accent: oklch(0.256 0.016 250);
+  --sidebar-accent-foreground: oklch(0.978 0.004 250);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: var(--ring);
 
@@ -574,6 +609,36 @@
  */
 @utility chart-glow {
   filter: drop-shadow(0 6px 16px var(--chart-glow));
+}
+
+/**
+ * 跑道仪表的刻度纸：只有水平细线。
+ * 它让"这条预测线在什么高度"变成可以比较的，而不是一条悬空的曲线。
+ */
+@utility runway-rules {
+  background-image: linear-gradient(to bottom, var(--ambient-grid) 1px, transparent 1px);
+  background-size: 100% 25%;
+}
+
+/** 压力—优化之间的上下限带。由数据算出来，不是画上去的装饰。 */
+@utility forecast-band {
+  background-image: linear-gradient(to bottom, var(--runway-band), transparent 88%);
+}
+
+/** 假设面板的滑杆——原生 range，样式只取令牌。 */
+@utility assumption-slider {
+  width: 100%;
+  height: 1.25rem;
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+  accent-color: var(--brand);
+}
+
+@utility assumption-slider-track {
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--muted);
 }
 
 /** Keyboard shortcut chip. */
