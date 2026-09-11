@@ -12,13 +12,12 @@ import { zhCN, type Messages } from "./zh-CN"
  * 词典负责 **界面文案**，以及由界面生成的文案模板：
  *   ✅ components/**        所有共享 UI（含 Sidebar / TopNav / FilterBar /
  *                           Pagination / DetailDrawer 等组件的默认文案）
- *   ✅ app/**               全部路由：CRM（/crm/**）、内置演示（/demo/**）、
- *                           落地页（/）、404 页
- *   ✅ lib/ai-summary.ts    AI 摘要的生成模板（是文案，不是数据）
+ *   ✅ app/**               全部路由：财务工作台（/finance/**）、落地页（/）、404 页
+ *   ✅ lib/finance-insights.ts  洞察句的**措辞模板**（事实由代码给出）
  *
  * 词典**不**负责 **业务记录内容**——那是数据，不是可翻译的文案：
- *   ⛔ lib/crm-data.ts      CRM 的客户名、公司名、备注、活动标题、标签、金额
- *   ⛔ lib/mock-data.ts     演示工作区的账户、活动流、通知
+ *   ⛔ lib/finance-data.ts   科目名、供应商名、客户名、账户名、月度矩阵
+ *   ⛔ lib/finance-ledger.ts 凭证号、摘要、发票号等由规则生成的记录内容
  *
  * 因此 `app/**` 与 `components/**` 里不应再出现任何用户可见的字面文案；
  * 新增原型直接从词典取文案即可。
