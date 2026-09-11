@@ -1,0 +1,36 @@
+import type { Metadata } from "next"
+import Link from "next/link"
+import { NotFoundState } from "@/components/prototype/not-found-state"
+import { buttonVariants } from "@/components/ui/button"
+import { messages } from "@/lib/i18n"
+
+export const metadata: Metadata = { title: messages.notFound.finance.metaTitle }
+
+const t = messages.notFound.finance
+
+/** 财务工作台的 404：给出七个真实页面里的三个，不留死胡同。 */
+export default function FinanceNotFound() {
+  return (
+    <main className="relative flex flex-1 items-center justify-center px-gutter py-16">
+      <div className="w-full max-w-content">
+        <NotFoundState
+          code="404"
+          testId="finance-not-found"
+          title={t.title}
+          description={t.description}
+          action={{ label: t.action, href: "/finance" }}
+          suggestions={[
+            { label: messages.nav.cashflow, href: "/finance/cashflow" },
+            { label: messages.nav.budget, href: "/finance/budget" },
+            { label: messages.nav.transactions, href: "/finance/transactions" },
+          ]}
+        />
+        <div className="mt-6 flex justify-center">
+          <Link href="/" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            {t.backHome}
+          </Link>
+        </div>
+      </div>
+    </main>
+  )
+}
