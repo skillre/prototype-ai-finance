@@ -301,6 +301,19 @@ export function TransactionsView(props: {
           rows={pagination.rows}
           rowKey={(row) => row.id}
           onRowClick={(row) => props.onOpenTransaction(row.id)}
+          /*
+            每一行的精确读数。表格里是紧凑格式（¥57万），指针悬停时带出
+            不受格式限制的原值 + 凭证号 —— 对账的人少一次「点开抽屉」。
+            触屏与 reduced-motion 下不激活；那时用户仍可点开抽屉读到同一个值，
+            因此这不是「只在桌面可见的信息」。
+          */
+          rowCursor={(row) =>
+            `${row.voucher} · ${formatCurrency(row.amount)} · ${
+              row.direction === "in"
+                ? t.finance.transactions.directionIn
+                : t.finance.transactions.directionOut
+            }`
+          }
           loading={status === "loading"}
           skeletonRows={PAGE_SIZE}
           emptyState={

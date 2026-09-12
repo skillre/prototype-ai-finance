@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    /* Kits 是源码分发：其内部 import 带 .ts / .tsx 扩展名（见
+       prototype-kits/styles/_contract/contract.ts）。没有这一项，
+       产品侧的 typecheck 会在 Kits 文件上直接报 TS5097。 */
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // agent 工作区：诊断脚本与截图，不属于交付物（见 .gitignore）
+    ".agent-tmp/**",
   ]),
 ]);
 

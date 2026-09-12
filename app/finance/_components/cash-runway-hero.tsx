@@ -96,8 +96,18 @@ export function CashRunwayHero({ onOpenCashflow }: { onOpenCashflow: () => void 
   const read = useCallback((index: number | null) => setHoverIndex(index), [])
 
   return (
+    /*
+      主视觉是一个**浮起来的、被光照到的面**，不是一片通铺的环境光。
+      `surface` 打开后，这一块拿到自己的表面色 + 连续圆角 + 深投影 +
+      内高光（全部来自 Style Pack），于是页面有了明确的"主角区"，
+      其余内容退到画布上 —— cinematic 用**光与深度**分层，这一步是它的落点。
+
+      仍保留 `-mx-4 sm:-mx-6`：面要吃掉页面 gutter，贴着容器两侧，
+      看起来才像一块舞台而不是一张卡。
+    */
     <OpenSection
       ambient="hero"
+      surface
       className="-mx-4 sm:-mx-6"
       contentClassName="flex flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8"
     >

@@ -73,17 +73,48 @@ lib/finance-insights.ts 七类洞察
 因此"每个图表各造一份数"在结构上不可能发生：**现金头寸、月度序列、预算实际发生额、
 账龄、凭证金额全部来自同一份流水**。
 
-## 设计系统 V5 — Financial Instrument
+## 设计语言 — Style Pack `cinematic`（prototype-kits）
 
-- **画布**：暖白纸（不是冷灰）——读的是报表，不是控制台。
-- **两个产品色**：深青 `--brand`（机构感，刻意不用"AI 紫"）+ 黄铜 `--data-accent`（预算与预测）。
-- **图表语义色**：`--data-income` 青 / `--data-expense` 陶土橙 / `--data-budget` 黄铜 / `--data-risk` 红。
-  同一张图里的每个颜色都在回答"这条线是什么"。
-- **更紧的圆角**（`--radius: 0.5rem`）：这是一台仪表，不是一组卡片。
-- **Light**：暖白纸 + 纯白面，靠亮度差分层而不靠描边。**Dark**：石墨底 + 下沉的 Hero，深青从中透出来。
-- **一屏一个光源**：带 Hero 的页面关掉全局环境光。
+> **实验分支** `feature/style-cinematic-experiment`：
+> 视觉语言由 **prototype-kits** 的 `cinematic` Style Pack 提供。
+> 产品的业务逻辑、数据、派生指标、洞察、路由、账本与全部测试**一行未改**。
+> 完整记录见 [`docs/kits-integration.md`](docs/kits-integration.md)。
 
-排版沿用工厂的中文红线：中文不加负字距、行高高于拉丁方案、字体栈以 Geist 起头回落 PingFang/YaHei。
+取值链路（产品 JSX 一行没改，只换了取值的来源）：
+
+```
+Finance 语义令牌（bg-surface / text-brand / border-hairline …）
+      ↑  全部 JSX 与 120 个测试都只认这些名字
+lib/kits/finance-tokens.css          ← 适配层（颜色覆盖在此）
+      ↑  var(--kits-*)
+@kits/style-cinematic                ← Style Pack（Kits v0.1 · approved）
+```
+
+- **层级靠光与深度**，不靠字号与留白，也不靠描边：主视觉是一块**被光照到的浮起舞台**。
+- **没有边界**（`--kits-border-width: 0`）：区块之间靠亮度差与投影分开。
+- **圆角 14px**（`--kits-radius-surface`）：连续的大半径，让光沿边缘爬。
+- **深色是 pack 的母语**；浅色模式是同一套光的语言在明亮空间里的对应物（**颜色**被覆盖，
+  排版 / 间距 / 圆角 / 边界 / 动效一律不改 —— 那是 pack 的身份）。
+- **动效只有一个来源**：pack 的 `motion.ts` 编译后注入 `<html>`。
+  因此同一个导航项在 `main` 上是 150ms、在这个 pack 下是 220ms，**组件零改动**。
+- **一屏一个光源**：唯一的光晕打在预测曲线上；环境光只有一个容器级实例。
+
+### 接入的 Kits 组件（3 个，每个都有产品理由）
+
+| 组件 | 用在哪 | 为什么是它 |
+| --- | --- | --- |
+| `AnimatedGrid` | 主视觉的环境层 | 让跑道上的数字看起来"在一个有尺度的面上"；网格尺寸与线色由 pack 决定 |
+| `DataCursor` | 账本 / 最近交易 | 表格是紧凑格式，对账要精确值。悬停即读到 `PZ-202609-31 · ¥43,608 · 支出`，省掉一次点开抽屉。触屏完全不激活，信息零损失 |
+| `InsightReveal` | AI 洞察层 | 洞察是叙事（01→02→03），逐段揭示把阅读顺序变成可见节奏；滚入视口才触发 |
+
+**刻意不用**：`InteractiveHero`（跑道的"标题"是读数不是文案，用它会逼内容迁就组件）、
+`SpotlightSurface`（同屏已经有一处发光，再加就是两个焦点）。
+
+### 中文排版红线（仍然成立）
+
+中文不使用负字距；带中文的层级保持自己的行高（pack 的 display 行高 1.08 只给
+纯数字读数）。字体栈由 pack 决定拉丁字形，**CJK 回退由产品显式接在后面**——
+Kits 契约没有"CJK 回退位"这个概念，这是本次发现的一个契约缺口。
 
 ## 本地化
 
@@ -106,7 +137,7 @@ lib/finance-insights.ts 七类洞察
 ## 测试
 
 ```bash
-pnpm test    # 119 个 Playwright 断言，8 个 spec
+pnpm test    # 120 个 Playwright 断言，9 个 spec
 ```
 
 | spec | 覆盖 |
@@ -145,9 +176,14 @@ lib/
   finance-ledger.ts           # 展开成流水
   finance-metrics.ts          # 派生指标
   finance-insights.ts         # 确定性洞察
+  kits/                       # ← Style Pack 适配层（本次实验新增）
+    finance-tokens.css        #   Finance 语义令牌 → --kits-* 契约
+    style-pack.ts             #   pack 的 motion.ts → CSS 变量
+    scene.tsx                 #   产品 API → Kits Signature Components
   format.ts / motion-presets.ts / i18n/
 stores/finance-store.ts       # 用户改了什麼（假设 / 筛选 / 分页 / 选中记录）
 components/                   # 从工厂继承的复用件
-tests/                        # 8 个 spec
+docs/kits-integration.md      # ← 本次 Style Migration 的完整记录（含 Kits 的 4 个集成缺口）
+tests/                        # 9 个 spec / 120 个断言
 .qa/shots.mjs                 # Browser QA 截图与错误检查
 ```

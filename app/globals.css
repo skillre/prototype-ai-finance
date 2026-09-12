@@ -2,15 +2,36 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/*
+ * =============================================================================
+ * Prototype Kits · Style Pack 接入点
+ *
+ * 视觉语言的**取值来源**在这里切换。这个文件只负责"引入"，
+ * 具体桥接规则在 lib/kits/finance-tokens.css：
+ *
+ *   Finance 语义令牌（bg-surface / text-brand / border-hairline …）
+ *        ↑ 全部 JSX 一行没改
+ *   桥接层 lib/kits/finance-tokens.css
+ *        ↑ var(--kits-*)
+ *   @kits/style-cinematic（Style Pack · cinematic）
+ *
+ * 放在 tailwind 之后：契约层的 :root 兜底值需要能被应用层覆盖。
+ * ========================================================================== */
+@import "../lib/kits/finance-tokens.css";
+
 @custom-variant dark (&:is(.dark *));
 
 /* =============================================================================
- * Design System V2 — Tailwind theme bridge
+ * Design System bridge — Tailwind theme
  *
  * Everything in this block turns a CSS variable into a Tailwind utility
  * (`--color-x` → `bg-x`, `--shadow-x` → `shadow-x`, `--text-x` → `text-x`).
  * `inline` keeps the value symbolic, so anything read here resolves against the
- * active theme (:root / .dark) at the point of use instead of at build time.
+ * active theme (:root / .dark / [data-kits-pack]) at the point of use instead
+ * of at build time.
+ *
+ * 这一整块是**接入能成立的关键**：因为 Finance 的每一个类名最终都指向一个
+ * CSS 变量，所以换 Style Pack 不需要改任何 JSX —— 只换变量的取值来源。
  * ========================================================================== */
 @theme inline {
   /* ---- Color: surfaces & text ------------------------------------------- */
@@ -36,8 +57,6 @@
   --color-accent-soft: var(--accent-soft);
 
   /* ---- Color: data-visualisation accent --------------------------------- */
-  /* The second series colour. Reserved for charts and data marks — never for
-     chrome. Brand cobalt + this cyan are the only two hues the product owns. */
   --color-data-accent: var(--data-accent);
   --color-data-accent-soft: var(--data-accent-soft);
 
@@ -51,8 +70,7 @@
   --color-data-neutral: var(--data-neutral);
 
   /* ---- Color: hairline -------------------------------------------------- */
-  /* A separator, not a boundary. Lighter than `--border` so structure can be
-     drawn with spacing + rules instead of with boxes. */
+  /* A separator, not a boundary. 在 cinematic 下它等于 pack 的 "光边" 规则色。 */
   --color-hairline: var(--hairline);
 
   /* ---- Color: semantic status ------------------------------------------- */
@@ -90,33 +108,34 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* ---- Typography ------------------------------------------------------- */
-  /* Geist leads, then the CJK stack. Chinese is never synthesized from a Latin
-     face: PingFang / Hiragino / YaHei / Noto each render 中文 at the right
-     optical weight, which is what keeps a dense Chinese UI from looking
-     muddy next to its Latin and numeric neighbours. */
+  /* 拉丁字形由 pack 的 --kits-font-* 决定（cinematic 首选 SF Pro / Inter）。
+     CJK 栈仍然必须显式接在后面：让中文字形从 PingFang / Hiragino / YaHei
+     落在正确的光学重量上，而不是由拉丁字体合成。
+
+     这是 Kits 契约的一个真实缺口 —— 契约只声明 --kits-font-display / body，
+     没有"CJK 回退位"的概念。Finance 只能在自己的层里补这一段。
+     详见 docs/kits-integration.md「契约缺口」。 */
   --font-sans:
-    var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    var(--kits-font-body), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
   --font-mono:
-    var(--font-geist-mono), "SF Mono", "JetBrains Mono", ui-monospace, monospace;
-  --font-heading:
-    var(--font-geist-sans), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+    var(--kits-font-mono), "SF Mono", "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: var(--font-sans);
 
   /* ---- Radius ----------------------------------------------------------- */
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-  /* Radius semantics derive from the single `--radius` base — defined here
-     (not in :root) so no token can ever reference itself. */
-  --radius-field: var(--radius);
-  --radius-card: calc(var(--radius) + 0.25rem);
-  --radius-panel: calc(var(--radius) + 0.5rem);
-  --radius-floating: calc(var(--radius) + 0.625rem);
+  /* 圆角哲学来自 pack（cinematic = continuous，surface 14px / control 8px）。
+     Finance 再派生三档语义圆角，值仍然指向 --kits-radius-*。 */
+  --radius-sm: calc(var(--kits-radius-control) * 0.6);
+  --radius-md: calc(var(--kits-radius-control) * 0.8);
+  --radius-lg: var(--kits-radius-control);
+  --radius-xl: var(--kits-radius-surface);
+  --radius-2xl: calc(var(--kits-radius-surface) * 1.28);
+  --radius-3xl: calc(var(--kits-radius-surface) * 1.57);
+  --radius-4xl: calc(var(--kits-radius-surface) * 1.85);
+  --radius-field: var(--kits-radius-control);
+  --radius-card: var(--kits-radius-surface);
+  --radius-panel: var(--kits-radius-surface);
+  --radius-floating: calc(var(--kits-radius-surface) * 1.28);
 
   /* ---- Elevation -------------------------------------------------------- */
   --shadow-subtle: var(--elevation-subtle);
@@ -132,368 +151,143 @@
   --ease-emphasized: var(--motion-ease-emphasized);
 
   /* ---- Layout ----------------------------------------------------------- */
-  --container-dashboard: 90rem;
-  --container-content: 75rem;
+  /* 内容最大宽度也归 pack：cinematic 是 78rem（"层"的节奏需要更宽的舞台）。 */
+  --container-dashboard: var(--kits-content-max);
+  --container-content: calc(var(--kits-content-max) * 0.94);
   --container-text: 42rem;
 }
 
 /* =============================================================================
- * Design tokens — the single source of truth.
+ * Design tokens — 语义令牌层
  *
- *   color     background | surface | elevated | interactive | foreground
- *             muted | border | accent | accent-soft | success | warning
- *             danger | info                      (all Light + Dark)
- *   type      text-display | text-title | text-heading | text-body
- *             text-body-sm | text-caption | text-label    + .numeric utility
+ * ⚠️ 取值不在这里。这里只保留**尺度**（排版 / 间距 / 动效时长刻度），
+ *    颜色 / 圆角 / 投影 / 环境光 / 缓动全部由 lib/kits/finance-tokens.css
+ *    从 @kits/style-cinematic 的契约变量桥接进来。
+ *
+ *   color     见 lib/kits/finance-tokens.css（Style Pack 所有）
+ *   radius    见上面的 @theme inline（派生自 --kits-radius-*）
+ *   type      text-display | text-title | … + .numeric utility
  *   space     p-gutter | gap-stack | gap-section | gap-card        (semantic)
- *   radius    rounded-field | rounded-card | rounded-panel | rounded-floating
- *   shadow    shadow-subtle | shadow-card | shadow-elevated | shadow-floating
- *   motion    duration-instant/fast/normal/slow/glacial
- *             duration-press/hover/enter/exit/modal/drawer/list/page
- *             ease-standard/out-expo/out-back/spring/emphasized
- *   width     max-w-dashboard | max-w-content | max-w-text
+ *   motion    duration-* / ease-*  — 由 pack 的 motion.ts 注入（见第 3 节）
  *
- * lib/motion-presets.ts mirrors the motion layer — keep the two in sync.
- * Never hardcode a color, duration or easing outside this file.
+ * Never hardcode a color, duration or easing outside the Kits bridge.
  * ========================================================================== */
 @theme {
   /* ---- Typography scale ------------------------------------------------- */
-  /* CJK RULE — this is the single most important typographic decision here.
+  /* CJK RULE — 仍然成立，但取舍变了。
      Chinese glyphs are full-width and square; negative tracking that flatters
-     Latin display type makes 中文 look cramped and crowded. So letter-spacing
-     is 0 on every token that carries Chinese, and the tight negative tracking
-     lives only on the numeric metrics below (digits are Latin and half-width).
-     Line-heights are also higher than a Latin-only scale would use: 1.05 on a
-     40px Chinese heading clips the glyphs. */
-  --text-display: clamp(2.5rem, 1.75rem + 2.6vw, 3.5rem);
-  --text-display--line-height: 1.18;
-  --text-display--letter-spacing: 0em;
-  --text-display--font-weight: 600;
+     Latin display type makes 中文 look cramped. So letter-spacing is 0 on every
+     token that carries Chinese.
+
+     cinematic 的 --kits-display-tracking 是 **+0.005em（正字距）**，这与
+     "中文不用负字距"并不冲突 —— 正字距对中文是安全的。display 因此直接
+     继承 pack 的字距，其余带中文的层级保持 0。
+
+     行高：cinematic 用 1.08（比 editorial 的 1.02 松，因为光晕需要呼吸）。
+     Finance 的 中文 heading 原本是 1.18 —— 1.08 在 40px 的中文上会切字，
+     因此 title/subtitle/heading 保持 1.3/1.4/1.45，只把 display 交给 pack。
+     这是"pack 与产品各自负责一半"的真实案例，见 docs/kits-integration.md。 */
+  --text-display: var(--kits-display-size);
+  --text-display--line-height: var(--kits-display-line);
+  --text-display--letter-spacing: var(--kits-display-tracking);
+  --text-display--font-weight: var(--kits-display-weight);
   --text-title: 1.75rem;
   --text-title--line-height: 1.3;
   --text-title--letter-spacing: 0em;
-  --text-title--font-weight: 600;
-  --text-subtitle: 1.25rem;
+  --text-title--font-weight: var(--kits-weight-semibold);
+  --text-subtitle: var(--kits-title-size);
   --text-subtitle--line-height: 1.4;
   --text-subtitle--letter-spacing: 0em;
   --text-heading: 1.0625rem;
   --text-heading--line-height: 1.45;
   --text-heading--letter-spacing: 0em;
-  --text-heading--font-weight: 600;
-  --text-body: 0.875rem;
-  --text-body--line-height: 1.7;
+  --text-heading--font-weight: var(--kits-weight-semibold);
+  --text-body: var(--kits-body-size);
+  --text-body--line-height: var(--kits-body-line);
   --text-body-sm: 0.8125rem;
   --text-body-sm--line-height: 1.65;
   --text-caption: 0.8125rem;
   --text-caption--line-height: 1.6;
-  --text-label: 0.75rem;
+  --text-label: var(--kits-label-size);
   --text-label--line-height: 1.45;
-  --text-label--letter-spacing: 0.01em;
-  /* Micro eyebrow — Latin/CJK-neutral; pair with `tracking-[0.16em]`. */
-  --text-eyebrow: 0.6875rem;
+  --text-label--letter-spacing: var(--kits-label-tracking);
+  /* Micro eyebrow — 取自 pack 的 label 刻度。cinematic 的 label tracking
+     是 0.08em（深色下大字距才有"浮起"感）。 */
+  --text-eyebrow: var(--kits-label-size);
   --text-eyebrow--line-height: 1.4;
-  --text-eyebrow--letter-spacing: 0.16em;
+  --text-eyebrow--letter-spacing: var(--kits-label-tracking);
 
   /* Numeric typography. Digits are half-width, so they CAN take the tight
      negative tracking that would ruin Chinese. Sizes are the hierarchy:
      `metric` is the page's protagonist, `metric-sm` is a secondary figure,
      `numeric` is an in-row figure (table cells, list values). */
+  /* 主角数字的字重降到 500：cinematic 在深色下用 500 是因为
+     400 会被背景吃掉，而这个数字比正文大 4 倍，500 反而更"亮"、
+     更像一个雕刻出来的读数，而不是一坨粗体。
+     字重是**排版性格**的一部分，因此它跟随 pack 的 --kits-data-weight。 */
   --text-metric: clamp(2.75rem, 1.6rem + 4vw, 4.25rem);
   --text-metric--line-height: 1;
   --text-metric--letter-spacing: -0.04em;
-  --text-metric--font-weight: 600;
-  --text-metric-sm: 1.875rem;
+  --text-metric--font-weight: var(--kits-weight-medium);
+  /* metric-sm 必须是 metric 的**下一档**，不是 pack 的 data 档。
+     pack 的 --kits-data-size(2.25rem) 是"一个读数"的尺寸（跑道上那个大数字），
+     而 metric-sm 是"次级指标带里的数字" —— 两者不是同一个层级。
+     更要紧的是可用宽度：390px 下指标带是 2 列，单元格内容宽 ≈130px，
+     "¥3,674,000" 在 28px 处刚好放下，36px 会溢出 16px（实测）。
+     因此这里取 1.75rem：它比 v1（1.875rem）小一档，与 pack 的
+     density=medium 一致，也不改变"大数字是主角"这一构图事实。 */
+  --text-metric-sm: 1.75rem;
   --text-metric-sm--line-height: 1.05;
   --text-metric-sm--letter-spacing: -0.032em;
-  --text-metric-sm--font-weight: 600;
+  --text-metric-sm--font-weight: var(--kits-data-weight);
   --text-numeric: 1.5rem;
   --text-numeric--line-height: 1.1;
   --text-numeric--letter-spacing: -0.03em;
-  --text-numeric--font-weight: 600;
+  --text-numeric--font-weight: var(--kits-data-weight);
 
-  /* ---- Spacing (semantic aliases on the default 4px scale) -------------- */
-  --spacing-gutter: 1rem;
-  --spacing-stack: 2.5rem;
-  --spacing-section: 3.5rem;
-  --spacing-card: 1.25rem;
-
-  /* ---- Motion durations ------------------------------------------------- */
-  /* `--duration-*` are the canonical, documented tokens (usable from JS via
-     `var(--duration-fast)`); the `--transition-duration-*` aliases below give
-     them real Tailwind utilities (`duration-fast`, `duration-enter`, …). */
-  --duration-instant: 100ms;
-  --duration-fast: 180ms;
-  --duration-normal: 280ms;
-  --duration-slow: 500ms;
-  --duration-glacial: 900ms;
-
-  /* Semantic durations — pick by intent, not by feel. */
-  --duration-press: 90ms;
-  --duration-hover: 150ms;
-  --duration-enter: 280ms;
-  --duration-exit: 160ms;
-  --duration-modal: 200ms;
-  --duration-drawer: 340ms;
-  --duration-list: 260ms;
-  --duration-page: 320ms;
-}
-
-/* Tailwind namespace bridge: `--transition-duration-x` → `duration-x`. */
-@theme inline {
-  --transition-duration-instant: var(--duration-instant);
-  --transition-duration-fast: var(--duration-fast);
-  --transition-duration-normal: var(--duration-normal);
-  --transition-duration-slow: var(--duration-slow);
-  --transition-duration-glacial: var(--duration-glacial);
-  --transition-duration-press: var(--duration-press);
-  --transition-duration-hover: var(--duration-hover);
-  --transition-duration-enter: var(--duration-enter);
-  --transition-duration-exit: var(--duration-exit);
-  --transition-duration-modal: var(--duration-modal);
-  --transition-duration-drawer: var(--duration-drawer);
-  --transition-duration-list: var(--duration-list);
-  --transition-duration-page: var(--duration-page);
+  /* ---- Spacing (semantic aliases on the pack's unit) -------------------- */
+  /* --kits-space-unit 是节奏的脉搏（cinematic = 8px，"层"的节奏）。
+     Finance 的语义间距全部由它派生，而不是继续用 Tailwind 的固定 4px 网格 ——
+     这样"间距节奏"这个维度才真的是 pack 在控制。 */
+  --spacing-gutter: var(--kits-gutter);
+  --spacing-stack: calc(var(--kits-space-unit) * 5);
+  --spacing-section: var(--kits-section-gap);
+  --spacing-card: calc(var(--kits-space-unit) * 3);
 }
 
 /* =============================================================================
- * AI Finance —— token 层。
+ * 第 3 节 · 动效刻度
  *
- * 与 Factory 的 V4 共用同一套**语义令牌名**（background / surface / elevated /
- * brand / data-accent / success / warning / danger / info / chart-1..5 /
- * elevation-* / ambient-*），换的是这一版产品的语气：
+ * 时长与缓动的**唯一**来源是 Style Pack 的 motion.ts。
+ * 它由 lib/kits/motion-vars.ts 用 Kits 自己的 motionToCssVars() 编译成
+ * CSS 变量，在 <html> 上以 inline style 注入（见 app/layout.tsx）。
  *
- *   • 画布是**暖白纸**，不是冷灰 —— 财务读的是"报表"，不是"控制台"。
- *   • 品牌色是**深青**（institutional teal），第二色是**黄铜**（brass）。
- *     不用钴蓝，也不用 AI 紫：这两个色属于财务，不属于上一版产品。
- *   • 图表有一套自己的语义色：收入=青、支出=陶土橙、预算=黄铜、风险=红。
- *     同一张图里出现的每个颜色都在回答"这条线是什么"。
- *   • 圆角比 V4 更紧（0.5rem），因为这是一台**仪表**，不是一组卡片。
+ * 这里只声明"存在哪些名字"，不声明取值 —— 与 Kits 契约的分工完全一致：
+ *   契约（Kits）  = 词汇表
+ *   pack（Kits）  = 取值
+ *   产品（本文件）= 引用
  * ========================================================================== */
-:root {
-  /* ---- Brand —— 深青：稳重、机构感、与"AI 紫"划清界限 ---------------- */
-  --brand: oklch(0.44 0.085 196);
-  --brand-foreground: oklch(0.99 0 0);
-  --brand-soft: oklch(0.944 0.022 196);
 
-  /* ---- Data accent —— 黄铜：预算、预测与"第二参考系" ------------------ */
-  --data-accent: oklch(0.66 0.115 72);
-  --data-accent-soft: oklch(0.955 0.03 78);
-
-  /* ---- Data semantics —— 图表语言 ------------------------------------- */
-  /* 收入用品牌青；支出用陶土橙；预算用黄铜；风险用红。 */
-  --data-income: oklch(0.44 0.085 196);
-  --data-expense: oklch(0.585 0.13 42);
-  --data-budget: oklch(0.66 0.115 72);
-  --data-risk: oklch(0.56 0.19 25);
-  --data-neutral: oklch(0.62 0.03 250);
-
-  /* ---- Surfaces —— 暖白纸 + 纯白面 ------------------------------------ */
-  /* 画布与表面之间留出足够落差，于是"一块内容浮起来了"可以**不靠边框**。 */
-  --background: oklch(0.985 0.004 96);
-  --foreground: oklch(0.19 0.012 252);
-  --surface: oklch(1 0 0);
-  --surface-foreground: oklch(0.19 0.012 252);
-  --elevated: oklch(1 0 0);
-  --elevated-foreground: oklch(0.19 0.012 252);
-  --interactive: oklch(0.963 0.005 140);
-  --muted: oklch(0.966 0.005 140);
-  --muted-foreground: oklch(0.502 0.012 250);
-  --border: oklch(0.922 0.006 140);
-  --input: oklch(0.912 0.007 140);
-  /* 分隔线，不是容器轮廓。 */
-  --hairline: oklch(0.934 0.005 140);
-  --ring: oklch(0.52 0.09 196);
-
-  /* ---- Accents --------------------------------------------------------- */
-  --accent: oklch(0.962 0.006 160);
-  --accent-foreground: oklch(0.25 0.015 250);
-  --accent-soft: oklch(0.95 0.02 196);
-
-  /* ---- Status —— 与图表语言同源，避免"同一个红有两个意思" ------------- */
-  --success: oklch(0.55 0.12 155);
-  --success-soft: oklch(0.958 0.03 155);
-  --warning: oklch(0.68 0.145 58);
-  --warning-soft: oklch(0.962 0.045 62);
-  --danger: oklch(0.56 0.19 25);
-  --danger-soft: oklch(0.96 0.032 25);
-  --info: oklch(0.56 0.1 244);
-  --info-soft: oklch(0.956 0.028 244);
-
-  /* ---- shadcn primitive bridge ------------------------------------------ */
-  --card: var(--surface);
-  --card-foreground: var(--surface-foreground);
-  --popover: var(--elevated);
-  --popover-foreground: var(--elevated-foreground);
-  --primary: var(--brand);
-  --primary-foreground: var(--brand-foreground);
-  --secondary: oklch(0.962 0.006 160);
-  --secondary-foreground: oklch(0.25 0.015 250);
-  --destructive: var(--danger);
-
-  /* ---- Charts —— 青 → 黄铜 → 陶土 → 靛 → 红 --------------------------- */
-  --chart-1: oklch(0.44 0.085 196);
-  --chart-2: oklch(0.66 0.115 72);
-  --chart-3: oklch(0.585 0.13 42);
-  --chart-4: oklch(0.52 0.09 265);
-  --chart-5: oklch(0.56 0.19 25);
-
-  /* ---- Radius —— 更紧的圆角：仪表感 ------------------------------------ */
-  --radius: 0.5rem;
-
-  /* ---- Elevation — soft, multi-layer, never a single hard drop ---------- */
-  --elevation-subtle:
-    0 1px 1px -0.5px oklch(0.2 0.015 250 / 0.05),
-    0 1px 3px oklch(0.2 0.015 250 / 0.04);
-  --elevation-card:
-    0 1px 1.5px -0.5px oklch(0.2 0.015 250 / 0.05),
-    0 4px 10px -4px oklch(0.2 0.015 250 / 0.06),
-    0 14px 32px -14px oklch(0.2 0.015 250 / 0.07);
-  --elevation-elevated:
-    0 2px 4px -2px oklch(0.2 0.015 250 / 0.06),
-    0 12px 28px -10px oklch(0.2 0.015 250 / 0.1),
-    0 28px 56px -24px oklch(0.2 0.015 250 / 0.1);
-  --elevation-floating:
-    0 4px 10px -4px oklch(0.2 0.015 250 / 0.09),
-    0 20px 44px -14px oklch(0.2 0.015 250 / 0.14),
-    0 44px 88px -32px oklch(0.2 0.015 250 / 0.16);
-
-  /* ---- Ambient lighting ------------------------------------------------- */
-  /* 主视觉的底色：Light 下是一层纸白，Dark 下沉到页面之下，让青从中透出来。 */
-  --hero-base: oklch(1 0 0 / 0.6);
-  --ambient-hero-brand: oklch(0.44 0.085 196 / 0.14);
-  --ambient-hero-warm: oklch(0.66 0.115 72 / 0.09);
-  --ambient-brand: oklch(0.44 0.085 196 / 0.12);
-  --ambient-warm: oklch(0.66 0.115 72 / 0.08);
-  --ambient-grid: oklch(0.2 0.012 250 / 0.035);
-  --ambient-ring: oklch(0.44 0.085 196 / 0.26);
-  /* 唯一一处光晕：预测主线，用来指出"这一条才是主结论"。 */
-  --chart-glow: oklch(0.44 0.085 196 / 0.26);
-  /* 跑道仪表的地平线（警戒线）——它不是错误色，是一条必须被看见的基线。 */
-  --runway-floor: oklch(0.56 0.19 25 / 0.55);
-  --runway-band: oklch(0.66 0.115 72 / 0.12);
-
-  /* ---- Motion easings --------------------------------------------------- */
-  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --motion-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --motion-ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --motion-ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
-  --motion-ease-emphasized: cubic-bezier(0.2, 0.9, 0.25, 1);
-
-  /* ---- Sidebar surfaces ------------------------------------------------- */
-  --sidebar: oklch(0.972 0.005 120);
-  --sidebar-foreground: oklch(0.23 0.012 250);
-  --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: var(--brand-foreground);
-  --sidebar-accent: oklch(0.936 0.01 160);
-  --sidebar-accent-foreground: oklch(0.23 0.012 250);
-  --sidebar-border: oklch(0.914 0.007 140);
-  --sidebar-ring: var(--ring);
-
-  color-scheme: light;
-}
-
-.dark {
-  /* ---- Brand —— 深色下抬起明度，但保持"青"而不是变成荧光 -------------- */
-  --brand: oklch(0.78 0.1 190);
-  --brand-foreground: oklch(0.17 0.02 250);
-  --brand-soft: oklch(0.295 0.045 196);
-
-  /* ---- Data accent ------------------------------------------------------ */
-  --data-accent: oklch(0.82 0.11 78);
-  --data-accent-soft: oklch(0.335 0.05 78);
-
-  /* ---- Data semantics --------------------------------------------------- */
-  --data-income: oklch(0.78 0.1 190);
-  --data-expense: oklch(0.72 0.13 46);
-  --data-budget: oklch(0.82 0.11 78);
-  --data-risk: oklch(0.72 0.16 22);
-  --data-neutral: oklch(0.66 0.03 250);
-
-  /* ---- Surfaces — graphite over a cool undertone ------------------------ */
-  /* 三档（0.165 → 0.215 → 0.252）拉得足够开：面靠亮度分层，而不是靠描边。 */
-  --background: oklch(0.165 0.012 250);
-  --foreground: oklch(0.968 0.004 250);
-  --surface: oklch(0.215 0.013 250);
-  --surface-foreground: oklch(0.968 0.004 250);
-  --elevated: oklch(0.252 0.014 250);
-  --elevated-foreground: oklch(0.968 0.004 250);
-  --interactive: oklch(0.285 0.015 250);
-  --muted: oklch(0.262 0.012 250);
-  --muted-foreground: oklch(0.715 0.012 250);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 13%);
-  --hairline: oklch(1 0 0 / 7%);
-  --ring: oklch(0.68 0.1 190);
-
-  /* ---- Accents ---------------------------------------------------------- */
-  --accent: oklch(0.278 0.014 250);
-  --accent-foreground: oklch(0.968 0.004 250);
-  --accent-soft: oklch(0.318 0.05 196);
-
-  /* ---- Status ----------------------------------------------------------- */
-  --success: oklch(0.75 0.125 158);
-  --success-soft: oklch(0.312 0.052 158);
-  --warning: oklch(0.82 0.13 66);
-  --warning-soft: oklch(0.33 0.055 66);
-  --danger: oklch(0.72 0.16 22);
-  --danger-soft: oklch(0.325 0.07 22);
-  --info: oklch(0.75 0.1 244);
-  --info-soft: oklch(0.312 0.05 244);
-
-  /* ---- shadcn primitive bridge ------------------------------------------ */
-  --secondary: oklch(0.264 0.013 250);
-  --secondary-foreground: oklch(0.968 0.004 250);
-
-  /* ---- Charts ------------------------------------------------------------ */
-  --chart-1: oklch(0.78 0.1 190);
-  --chart-2: oklch(0.82 0.11 78);
-  --chart-3: oklch(0.72 0.13 46);
-  --chart-4: oklch(0.7 0.09 265);
-  --chart-5: oklch(0.72 0.16 22);
-
-  /* ---- Elevation — inset hairline + a deep, wide soft shadow ------------ */
-  --elevation-subtle:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.04),
-    0 1px 2px 0 oklch(0 0 0 / 0.4);
-  --elevation-card:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.05),
-    0 2px 6px -2px oklch(0 0 0 / 0.5),
-    0 14px 34px -16px oklch(0 0 0 / 0.7);
-  --elevation-elevated:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.06),
-    0 4px 12px -4px oklch(0 0 0 / 0.55),
-    0 22px 48px -20px oklch(0 0 0 / 0.76);
-  --elevation-floating:
-    inset 0 1px 0 0 oklch(1 0 0 / 0.075),
-    0 8px 20px -6px oklch(0 0 0 / 0.6),
-    0 36px 76px -24px oklch(0 0 0 / 0.85);
-
-  /* ---- Ambient — Dark 允许比 Light 更有表现力 --------------------------- */
-  /* Hero 沉到页面之下，深青从中透出来；用"更深的底 + 更亮的光"换语气，
-     而不是加霓虹或紫雾。 */
-  --hero-base: oklch(0.135 0.014 250);
-  --ambient-hero-brand: oklch(0.78 0.1 190 / 0.26);
-  --ambient-hero-warm: oklch(0.82 0.11 78 / 0.12);
-  --ambient-brand: oklch(0.78 0.1 190 / 0.15);
-  --ambient-warm: oklch(0.82 0.11 78 / 0.07);
-  --ambient-grid: oklch(1 0 0 / 0.05);
-  --ambient-ring: oklch(0.78 0.1 190 / 0.32);
-  --chart-glow: oklch(0.78 0.1 190 / 0.45);
-  --runway-floor: oklch(0.72 0.16 22 / 0.6);
-  --runway-band: oklch(0.82 0.11 78 / 0.14);
-
-  /* ---- Sidebar surfaces ------------------------------------------------- */
-  /* 比页面更深：导航后退，内容向前。 */
-  --sidebar: oklch(0.185 0.012 250);
-  --sidebar-foreground: oklch(0.945 0.005 250);
-  --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: var(--brand-foreground);
-  --sidebar-accent: oklch(0.256 0.016 250);
-  --sidebar-accent-foreground: oklch(0.978 0.004 250);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: var(--ring);
-
-  color-scheme: dark;
+/* Tailwind namespace bridge: `--transition-duration-x` → `duration-x`. */
+@theme inline {
+  --transition-duration-instant: var(--kits-dur-instant);
+  --transition-duration-fast: var(--kits-dur-quick);
+  --transition-duration-normal: var(--kits-dur-base);
+  --transition-duration-slow: var(--kits-dur-slow);
+  /* `glacial` 是"最长的一段可感知过渡"，映射到 slow（720ms），
+     **不是** ambient（9000ms）—— ambient 是环境呼吸的周期，不是过渡时长。
+     数值尺度由 pack 决定：v1 里这五个刻度是 100/180/280/500/900ms，
+     cinematic 给出的是 120/220/360/720 —— 变慢了，而且这是对的：
+     氛围需要时间被感知。 */
+  --transition-duration-glacial: var(--kits-dur-slow);
+  --transition-duration-press: var(--kits-dur-instant);
+  --transition-duration-hover: var(--kits-dur-quick);
+  --transition-duration-enter: var(--kits-dur-base);
+  --transition-duration-exit: var(--kits-dur-quick);
+  --transition-duration-modal: var(--kits-dur-base);
+  --transition-duration-drawer: var(--kits-dur-slow);
+  --transition-duration-list: var(--kits-dur-base);
+  --transition-duration-page: var(--kits-dur-slow);
 }
 
 @layer base {
@@ -513,6 +307,8 @@
     /* 中文 falls back through the stack above; Latin figures stay tabular-ish
        in running text without forcing tabular on every paragraph. */
     font-synthesis-weight: none;
+    /* cinematic 要求正文不是最亮的颜色 —— 靠 ink/ink-muted 的差值建立阅读层级。 */
+    color: var(--muted-foreground);
   }
   /* Big Chinese headings need the tighter optical size without the negative
      tracking that a Latin display face would want. `text-balance` alone does
@@ -521,6 +317,7 @@
   h2,
   h3 {
     text-wrap: balance;
+    color: var(--foreground);
   }
   ::selection {
     background: var(--brand-soft);
@@ -541,57 +338,72 @@
 /**
  * Micro eyebrow label — the small tracked line above a section or a metric.
  * The tracking is what makes 2–4 Chinese characters read as a label rather
- * than as a truncated sentence.
+ * than as a truncated sentence. Tracking 取自 pack 的 label 刻度。
  */
 @utility eyebrow {
   font-size: var(--text-eyebrow);
   line-height: 1.4;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--text-eyebrow--letter-spacing);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 /**
- * Section marker: a short brand tick before an eyebrow. Used to open an
- * "open section" that has no card to carry its title.
+ * Section marker: a short brand tick before an eyebrow.
+ *
+ * 在 cinematic 下它读作"光边"而不是"色块"：一条带 glow 的短横线，
+ * 与 pack 的 .kits-rule--short 同源。它仍然只表达"这里开始一个区块"。
  */
 @utility section-tick {
   display: inline-block;
   width: 1.25rem;
-  height: 2px;
-  border-radius: 999px;
+  height: var(--kits-border-width-strong);
   background: var(--brand);
+  box-shadow: 0 0 18px var(--kits-color-glow);
   vertical-align: 0.28em;
   margin-right: 0.5rem;
 }
 
 /**
- * A very light grid, used behind hero / chart / palette surfaces. The grid is
- * masked at the edges so it reads as texture rather than as a table.
+ * A very light grid, used behind hero / chart / palette surfaces.
+ *
+ * 网格的**尺寸与线色现在来自 pack**（cinematic = 64px / 白 4.5%），
+ * 因此同一份类名在另一个 pack 下会变成另一张网格。
+ * 组件化的版本是 <AnimatedGrid />（见 lib/kits/），这个工具类保留给
+ * 需要"一次性、非组件化"网格的场合（例如 palette 的内衬）。
  */
 @utility ambient-grid {
   background-image:
-    linear-gradient(to right, var(--ambient-grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--ambient-grid) 1px, transparent 1px);
-  background-size: 44px 44px;
-}
-
-/** Radial brand wash. Pair with `ambient-grid` for the layered look. */
-@utility ambient-wash {
-  background-image:
-    radial-gradient(60% 55% at 50% 0%, var(--ambient-brand), transparent 72%),
-    radial-gradient(38% 42% at 88% 8%, var(--ambient-warm), transparent 70%);
+    linear-gradient(to right, var(--kits-grid-line-color) var(--kits-grid-line-width), transparent var(--kits-grid-line-width)),
+    linear-gradient(to bottom, var(--kits-grid-line-color) var(--kits-grid-line-width), transparent var(--kits-grid-line-width));
+  background-size: var(--kits-grid-cell) var(--kits-grid-cell);
 }
 
 /**
- * The hero's own light source: one off-centre bloom, nothing else.
- * It reads its own tokens so the hero can be pushed further in dark without
- * dragging every other ambient surface along with it.
+ * Radial brand wash.
+ *
+ * cinematic 的规则：光必须有方向、有数量限制。
+ * 因此这里与 pack 的 .kits-ambient 用**同一组三个光源**（左上主光 / 右上辅光 /
+ * 底部补光），而不是无方向的两层渐变 —— 无方向的光会让页面看起来是"贴了一张图"。
+ */
+@utility ambient-wash {
+  background-image:
+    radial-gradient(60% 50% at 18% 8%, var(--ambient-brand), transparent 62%),
+    radial-gradient(50% 45% at 85% 20%, var(--ambient-warm), transparent 60%),
+    radial-gradient(70% 55% at 50% 105%, var(--finance-ambient-rim), transparent 65%);
+}
+
+/**
+ * The hero's own light source: the same three-point setup, pushed brighter,
+ * because the runway instrument is the page's protagonist.
+ * It reads its own tokens so the hero can be pushed further without dragging
+ * every other ambient surface along with it.
  */
 @utility hero-wash {
   background-image:
     radial-gradient(52% 68% at 12% 0%, var(--ambient-hero-brand), transparent 68%),
-    radial-gradient(44% 56% at 92% 12%, var(--ambient-hero-warm), transparent 72%);
+    radial-gradient(44% 56% at 92% 12%, var(--ambient-hero-warm), transparent 72%),
+    radial-gradient(70% 60% at 50% 108%, var(--finance-ambient-rim), transparent 66%);
 }
 
 /** Faint top highlight used on premium cards and panels. */
@@ -606,6 +418,7 @@
 /**
  * Single controlled bloom under the hero chart's stroke. It is the only glow
  * in the product — applied to one SVG path, never to a container.
+ * cinematic: 数据是光的载体；同屏发光元素 ≤ 1。
  */
 @utility chart-glow {
   filter: drop-shadow(0 6px 16px var(--chart-glow));
@@ -616,7 +429,7 @@
  * 它让"这条预测线在什么高度"变成可以比较的，而不是一条悬空的曲线。
  */
 @utility runway-rules {
-  background-image: linear-gradient(to bottom, var(--ambient-grid) 1px, transparent 1px);
+  background-image: linear-gradient(to bottom, var(--kits-data-grid-color) var(--kits-data-grid-width), transparent var(--kits-data-grid-width));
   background-size: 100% 25%;
 }
 
@@ -650,7 +463,7 @@
   height: 1.25rem;
   padding-inline: 0.25rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: var(--kits-border-width-strong) solid var(--border);
   background: var(--elevated);
   color: var(--muted-foreground);
   font-size: 0.6875rem;
@@ -668,7 +481,10 @@
   }
 }
 
-/* Slow ambient drift for the brand wash. Long, low-amplitude, never distracting. */
+/**
+ * Slow ambient drift for the brand wash. Long, low-amplitude, never distracting.
+ * 周期来自 pack 的 --kits-ambient-cycle（cinematic = 9s），不再是硬编码值。
+ */
 @keyframes ambient-drift {
   0%,
   100% {
@@ -696,6 +512,14 @@
   }
 }
 
+/* -----------------------------------------------------------------------------
+ * 降级：reduced-motion
+ *
+ * 契约层（@kits/style-cinematic/tokens.css → _contract/tokens.css）已经强制
+ * 把所有 --kits-dur-* / --kits-pointer-factor / --kits-enter-distance 归零。
+ * 这里补的是**应用自己的**动画（live-halo、ambient-drift）——
+ * pack 管不到产品自己写的 keyframes。
+ * -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

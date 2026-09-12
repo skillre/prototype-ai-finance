@@ -101,7 +101,9 @@ function Brand({ brand }: { brand: NavBrandDef }) {
   const Icon = brand.icon ?? BlocksIcon
   return (
     <div className="flex items-center gap-2.5 px-3 pt-4 pb-3.5">
-      <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[11px] bg-brand text-brand-foreground shadow-subtle ring-1 ring-brand/25 ring-inset">
+      {/* 圆角取自 pack 的 radius-control（cinematic = 8px），
+          而不是写死的 11px —— 圆角哲学属于 Style Pack，不属于这个方块。 */}
+      <span className="relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-field bg-brand text-brand-foreground shadow-subtle ring-1 ring-brand/25 ring-inset">
         {/* 内高光：让实心块有"材质"，不需要阴影堆叠。 */}
         <span aria-hidden className="surface-sheen absolute inset-0" />
         {brand.mark ?? <Icon className="relative size-4" />}
@@ -472,7 +474,20 @@ export function SidebarNav({
   )
 }
 
-/** 固定桌面侧栏——`lg` 以下隐藏。 */
+/**
+ * 固定桌面侧栏——`lg` 以下隐藏。
+ *
+ * ---------------------------------------------------------------------------
+ * Style Pack 接入点：navigationFeel = overlay-space
+ * ---------------------------------------------------------------------------
+ * cinematic 的导航是**浮在内容之上的一层空间**，不是一条贴着页边的色带。
+ * 因此这里去掉 `border-r`（cinematic 的 borderTreatment 是 none-with-depth，
+ * 硬描边在深色下会读成"调试框"），改用 pack 的表面阴影把侧栏从画布上
+ * "抬"起来 —— 层级由**亮度差与投影**建立，而不是由一条线标出边界。
+ *
+ * 这是本实验里改动最小、观感差别最大的一处：侧栏在七个路由上都常驻，
+ * 它决定了人第一眼觉得"这是哪个产品"。
+ */
 export function Sidebar({
   active,
   onNavigate,
@@ -507,7 +522,7 @@ export function Sidebar({
   navLabel?: string
 }) {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
+    <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground shadow-card lg:flex">
       <SidebarNav
         active={active}
         onNavigate={onNavigate}

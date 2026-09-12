@@ -43,3 +43,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# agent 工作区（截图、诊断脚本、前后对比证据）——不属于仓库内容
+.agent-tmp/
+

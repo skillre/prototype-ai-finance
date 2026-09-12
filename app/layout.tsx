@@ -6,6 +6,7 @@ import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { DEFAULT_LOCALE } from "@/lib/i18n";
+import { stylePackMotionVars } from "@/lib/kits/style-pack";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={DEFAULT_LOCALE}
       suppressHydrationWarning
+      /*
+        Style Pack 作用域。Kits 的颜色全部写在
+        `[data-kits-pack="cinematic"]` 里，因此页面必须声明一次；
+        放在 <html> 上的原因是：对话框 / 抽屉 / toast 都通过 portal
+        挂到 body 层，声明在页面容器里会让它们拿不到 pack 取值。
+      */
+      data-kits-pack="cinematic"
+      /*
+        动效刻度由 pack 的 motion.ts 编译而来（见 lib/kits/style-pack.ts）。
+        贴在这里而不是写进 CSS，是为了让"时长只有一个来源"这件事在结构上成立：
+        改 pack → 所有时长跟着变，产品一行不用改。
+        SSR 阶段即可序列化 → 没有 hydration 差异。
+      */
+      style={stylePackMotionVars as React.CSSProperties}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

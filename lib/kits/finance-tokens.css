@@ -1,0 +1,243 @@
+/* =============================================================================
+ * AI Finance × prototype-kits · Style Pack 桥接层（ADAPTER，不属于任何一方）
+ *
+ * 它回答一个问题：
+ *   「Finance 已有的语义令牌名（background / brand / hairline / …）
+ *     怎么落到 Kits 的契约变量（--kits-*）上？」
+ *
+ * ---------------------------------------------------------------------------
+ * 为什么需要这一层（而不是把 Finance 的类名全改掉）
+ * ---------------------------------------------------------------------------
+ * Finance 的 120 个业务测试与全部 JSX 都只认语义类名（bg-surface、
+ * text-brand、border-hairline）。把类名改成 Kits 的类名 = 全站重写，
+ * 那是 Product Rewrite，不是 Style Migration。
+ *
+ * 反过来，把 Kits 的变量值抄进 Finance 的令牌块 = 复制 + 魔改，会被
+ * 下一次 Kits 升级悄悄脱钩。
+ *
+ * 所以：**保留 Finance 的词汇，把取值权交给 Kits 的契约。**
+ *
+ * ---------------------------------------------------------------------------
+ * 允许覆盖什么
+ * ---------------------------------------------------------------------------
+ * Kits docs/integration.md §4：**只允许覆盖颜色**。
+ * 排版 / 间距 / 密度 / 圆角 / 边界 / 动效一律由 pack 决定 ——
+ * 那是 pack 的身份，覆盖掉就不再是这套风格了。
+ * ========================================================================== */
+
+/* 契约在前，pack 在后。契约层提供 --kits-* 的中立兜底值，
+   因此即使 pack 作用域没生效，页面依然可读、无错。 */
+@import "@kits/style-cinematic/tokens.css";
+
+/* =============================================================================
+ * 一、浅色模式：cinematic 的"明亮版"
+ *
+ * cinematic 的立场是「用光与深度分层」，不是「深色」。深色空间里靠
+ * "表面比背景亮"分层；明亮空间里反过来 —— 靠"表面比背景更白 + 环境光偏冷
+ * + 深投影"分层，**光的数量、方向、克制程度完全不变**。
+ *
+ * 这是 Kits 明确允许的覆盖范围（颜色），也是本实验要验证的一件事：
+ * 一个 pack 能不能在不改变其语言的前提下服务浅色与深色两种场景。
+ *
+ * 特异性说明（重要）：
+ *   pack 自己的取值写在 `[data-kits-pack="cinematic"]`（0-1-0）。
+ *   本块写成 `[data-kits-pack="cinematic"]:not(.dark)`（0-2-0）→ **稳定压过 pack**，
+ *   不依赖"谁后被导入"。深色块 `[data-kits-pack="cinematic"].dark` 同样是 0-2-0，
+ *   但它写在后面，因此深色胜出。
+ *   这样两种模式的胜负由特异性与源码顺序共同确定，而不是由打包顺序决定。
+ * ========================================================================== */
+
+[data-kits-pack="cinematic"]:not(.dark) {
+  /* --- 画布与表面：明亮空间的亮度梯度 ------------------------------------ */
+  /* 对应 cinematic 深色的 canvas #07090f → surface #0f1420 → raised #161d2c。
+     这里是它的反向：暖白 → 纯白 → 更白。层级建立方式完全一致。 */
+  --kits-color-canvas: oklch(0.949 0.006 96);
+  --kits-color-surface: oklch(1 0 0);
+  --kits-color-surface-raised: oklch(1 0 0);
+  --kits-color-surface-sunken: oklch(0.926 0.007 96);
+  --kits-color-ink: oklch(0.205 0.015 250);
+  --kits-color-ink-muted: oklch(0.472 0.013 250);
+
+  /* --- 强调色：换掉色相，保留 / 的语义 ----------------------------------- */
+  /* cinematic 原生是 青(#4fd6ff) + 琥珀(#ffb64f)。浅色下这两个色相的对比度
+     不够（浅底上的浅青几乎读不出来），因此保持"两个强调色"的结构、
+     换成语义等价的深色版本：主强调 = 品牌（青绿），第二强调 = 黄铜。
+     深色模式下则直接用 pack 原生 palette（见 §2）。 */
+  --kits-color-accent: oklch(0.4 0.093 200);
+  --kits-color-accent-ink: oklch(0.99 0 0);
+  --kits-color-accent-2: oklch(0.5 0.105 72);
+  --kits-color-positive: oklch(0.47 0.106 155);
+  --kits-color-negative: oklch(0.5 0.18 25);
+  --kits-color-rule: oklch(0.205 0.015 250 / 0.12);
+  --kits-color-rule-strong: oklch(0.205 0.015 250 / 0.26);
+  --kits-color-focus: oklch(0.4 0.093 200);
+  --kits-color-glow: oklch(0.4 0.093 200 / 0.5);
+
+  /* --- 文字遮罩：cinematic 的 scrim-strength 是 0.55（深色需要压暗），
+         明亮空间下同一个值会把内容糊掉，因此压到 0.12。 */
+  --kits-scrim-strength: 0.12;
+
+  /* --- 表面：cinematic 的深投影在明亮空间下的对应物 ---------------------- */
+  /* 内高光保留（那是"材质连续"的一部分），外投影由黑 90% 换成墨 18%。 */
+  --kits-surface-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.95) inset,
+    0 2px 6px -2px oklch(0.205 0.015 250 / 0.07),
+    0 22px 52px -22px oklch(0.205 0.015 250 / 0.26);
+
+  /* --- 控件：深色下的白 4% 底色在浅色下不可见 ---------------------------- */
+  --kits-control-surface: rgb(255 255 255 / 0.72);
+
+  /* --- 环境光：三个光源的**位置与数量不变**，只把不透明度从 16/10/12%
+         压到 9/5/6%（浅色底上同样的强度会过曝）。 */
+  --kits-ambient-key: oklch(0.42 0.1 200 / 0.42);
+  --kits-ambient-fill: oklch(0.55 0.115 72 / 0.3);
+  --kits-ambient-rim: oklch(0.5 0.1 265 / 0.24);
+
+  /* --- 数据：glow-series 的浅色版本 ------------------------------------- */
+  --kits-data-grid-color: oklch(0.205 0.015 250 / 0.1);
+  --kits-data-series-3: oklch(0.5 0.1 265);
+  --kits-grid-line-color: oklch(0.205 0.015 250 / 0.13);
+  --kits-cursor-ring-color: oklch(0.4 0.093 200 / 0.6);
+  --kits-border-hairline-color: oklch(0.205 0.015 250 / 0.12);
+  --kits-nav-indicator: oklch(0.4 0.093 200);
+
+  /* 标题自带的"被环境光照到"这一点点光：深色下是青色 12%，
+     浅色下换成品牌青 7%，否则白底上的白光是不可见的。 */
+  --kits-display-glow: oklch(0.4 0.093 200 / 0.09);
+}
+
+/* =============================================================================
+ * 二、深色模式：cinematic 的**原生**取值
+ *
+ * 这里尽量什么都不写 —— 越少覆盖，越能证明"pack 真的在管事"。
+ * 只补两处 pack 没有定义、但浅色块定义过的变量（否则深色会漏出浅色值）。
+ * ========================================================================== */
+
+[data-kits-pack="cinematic"].dark {
+  --kits-control-surface: rgb(255 255 255 / 0.04);
+  --kits-ambient-key: rgb(79 214 255 / 0.16);
+  --kits-ambient-fill: rgb(255 182 79 / 0.1);
+  --kits-ambient-rim: rgb(139 123 255 / 0.12);
+  --kits-display-glow: rgb(79 214 255 / 0.12);
+}
+
+/* =============================================================================
+ * 三、Finance 语义令牌 → Kits 契约
+ *
+ * 从这里往下，Finance 的全部 JSX 一行没改，但它们拿到的每一个取值
+ * 最终都来自 Kits 的 Style Pack 契约。
+ *
+ * 排版 / 间距 / 密度 / 圆角 / 边界 / 动效 **直接引用契约变量**，
+ * 不做任何 Finance 侧的改写 —— 这是"换 pack 会真的改变产品"的保证。
+ * ========================================================================== */
+
+:root {
+  /* ---- 表面与文字：直接指向契约 ----------------------------------------- */
+  --background: var(--kits-color-canvas);
+  --foreground: var(--kits-color-ink);
+  --surface: var(--kits-color-surface);
+  --surface-foreground: var(--kits-color-ink);
+  --elevated: var(--kits-color-surface-raised);
+  --elevated-foreground: var(--kits-color-ink);
+  --interactive: color-mix(in srgb, var(--kits-color-ink) 5%, var(--kits-color-surface));
+  --muted: color-mix(in srgb, var(--kits-color-ink) 7%, var(--kits-color-surface));
+  --muted-foreground: var(--kits-color-ink-muted);
+
+  --border: var(--kits-color-rule);
+  --input: var(--kits-color-rule-strong);
+  --hairline: var(--kits-color-rule);
+  --ring: var(--kits-color-focus);
+
+  /* ---- 品牌与强调 ------------------------------------------------------- */
+  --brand: var(--kits-color-accent);
+  --brand-foreground: var(--kits-color-accent-ink);
+  --brand-soft: color-mix(in srgb, var(--kits-color-accent) 14%, transparent);
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--kits-color-ink);
+  --accent-soft: var(--brand-soft);
+
+  --data-accent: var(--kits-color-accent-2);
+  --data-accent-soft: color-mix(in srgb, var(--kits-color-accent-2) 16%, transparent);
+
+  /* ---- 状态 ------------------------------------------------------------- */
+  --success: var(--kits-color-positive);
+  --success-soft: color-mix(in srgb, var(--kits-color-positive) 16%, transparent);
+  --warning: var(--kits-color-accent-2);
+  --warning-soft: color-mix(in srgb, var(--kits-color-accent-2) 16%, transparent);
+  --danger: var(--kits-color-negative);
+  --danger-soft: color-mix(in srgb, var(--kits-color-negative) 16%, transparent);
+  --info: var(--kits-color-accent-2);
+  --info-soft: color-mix(in srgb, var(--kits-color-accent-2) 14%, transparent);
+
+  /* ---- 图表语言 --------------------------------------------------------- */
+  /* 语义槽位不变（收入 / 支出 / 预算 / 风险），取值换成 **pack 的数据系列** ——
+     这正是 glow-series 在管事的地方：同一份图表代码，两套色相。 */
+  --data-income: var(--kits-data-series-1);
+  --data-expense: var(--kits-data-series-2);
+  --data-budget: var(--kits-color-accent-2);
+  --data-risk: var(--kits-color-negative);
+  --data-neutral: var(--kits-color-ink-muted);
+
+  /* ---- shadcn 桥接 ------------------------------------------------------ */
+  --card: var(--surface);
+  --card-foreground: var(--surface-foreground);
+  --popover: var(--elevated);
+  --popover-foreground: var(--elevated-foreground);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --secondary: var(--muted);
+  --secondary-foreground: var(--foreground);
+  --destructive: var(--danger);
+
+  --chart-1: var(--kits-data-series-1);
+  --chart-2: var(--kits-data-series-2);
+  --chart-3: var(--kits-data-series-3);
+  --chart-4: var(--kits-color-accent-2);
+  --chart-5: var(--kits-color-negative);
+
+  /* ---- 圆角：来自 pack（cinematic = continuous，surface 14px） ---------- */
+  --radius: var(--kits-radius-control);
+
+  /* ---- 投影：来自 pack（ambient-glow 的深投影） ------------------------- */
+  --elevation-subtle: var(--kits-surface-shadow);
+  --elevation-card: var(--kits-surface-shadow);
+  --elevation-elevated: var(--kits-surface-shadow);
+  --elevation-floating: var(--kits-surface-shadow);
+
+  /* ---- 环境光：来自 pack ------------------------------------------------ */
+  --hero-base: color-mix(in srgb, var(--kits-color-canvas) 92%, transparent);
+  --ambient-hero-brand: var(--kits-ambient-key);
+  --ambient-hero-warm: var(--kits-ambient-fill);
+  --ambient-brand: var(--kits-ambient-key);
+  --ambient-warm: var(--kits-ambient-fill);
+  --ambient-grid: var(--kits-grid-line-color);
+  --ambient-ring: color-mix(in srgb, var(--kits-color-accent) 26%, transparent);
+  --chart-glow: var(--kits-color-glow);
+  --runway-floor: color-mix(in srgb, var(--kits-color-negative) 55%, transparent);
+  --runway-band: color-mix(in srgb, var(--kits-color-accent-2) 12%, transparent);
+
+  /* ---- 动效缓动：**直接引用契约** --------------------------------------- */
+  /* 时长不在这里 —— 它们在 --kits-dur-*，由 lib/kits/style-pack.ts 从
+     motion.ts 编译后注入到 <html>。见 app/globals.css 第 3 节。 */
+  --motion-ease-standard: var(--kits-ease-inout);
+  --motion-ease-out-expo: var(--kits-ease-out);
+  --motion-ease-out-back: var(--kits-ease-spring);
+  --motion-ease-spring: var(--kits-ease-spring);
+  --motion-ease-emphasized: var(--kits-ease-out);
+
+  /* ---- 侧栏：pack 的 navigation-feel = overlay-space -------------------- */
+  --sidebar: var(--kits-color-surface-sunken);
+  --sidebar-foreground: var(--kits-color-ink);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--brand-foreground);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--kits-color-ink);
+  --sidebar-border: var(--kits-color-rule);
+  --sidebar-ring: var(--ring);
+
+  color-scheme: light;
+}
+
+[data-kits-pack="cinematic"].dark {
+  color-scheme: dark;
+}
