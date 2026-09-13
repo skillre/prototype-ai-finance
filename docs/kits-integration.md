@@ -1,8 +1,11 @@
-# AI Finance × Prototype Kits v0.1.0 —— Source Installation 集成记录
+# AI Finance × Prototype Kits —— Source Installation 集成记录
 
 > 分支：`feature/style-cinematic-source-install`（从 `main` @ `852b996` 干净重做）
-> Kits：`prototype-kits` **v0.1.0** · `main` @ `64279eaf56bb7dd19daad96f1bcf43950256f8fe`
+> Kits：`prototype-kits` **v0.1.0** → **v0.1.1** · `main` @ `64279eaf` → `9988c958`
 > 结论：**Delivery Mode（Source Installation）成立** —— 产品不再需要 Kits 仓库在场。
+>
+> **v0.1.1 回归已完成**：本文第一 ~ 十一节是 v0.1.0 的原始集成记录（保留为证据链），
+> 第十二节是 v0.1.1 正式安装后的逐项复测与修复确认。
 
 ---
 
@@ -248,7 +251,7 @@ Source Installation 把 Kits 源码**复制进产品**，由产品自己的编�
 | `kits doctor` | ✓ 9/9（lock / lock-source / integrity 42 文件 / dependencies / react-major / types-parity / react-vs-types / typescript / adapters） |
 | `pnpm lint` | ✓ 0 error 0 warning |
 | `pnpm typecheck` | ✓ `next typegen` + `tsc --noEmit`，**tsconfig 零改动** |
-| `pnpm test` | ✓ **120 passed**（选择器 1 处修正，业务断言零改动 —— 见第十节 K-01） |
+| `pnpm test` | ✓ **120 passed**（当时因 K-01 有 1 处选择器退回 DOM —— **v0.1.1 已恢复为 `getByRole`，见第十二节**） |
 | `pnpm build` | ✓ 10 条路由 |
 | Browser QA | ✓ 8 路由 × 2 视口 × 明/暗 = **32 页**：0 console / 0 page / 0 request 错误，0 横向溢出 |
 | Standalone | ✓ 见下 |
@@ -341,7 +344,11 @@ DOM 结构绑在一个已经不存在的契约上。这是"适配层得以简化
 ## 十、Source Installation 暴露的问题
 
 按严重度排列。**三个是 Kits 侧的真实缺陷，两个是适配层/契约的缺口。**
-全部在本次集成中实测到，全部尚未修复（Kits 在本轮为只读）。
+全部在本次集成中实测到。
+
+> **状态（Kits v0.1.1）：全部已修。** 本节保留的是 v0.1.0 当时的原始记录 ——
+> 它是这些缺陷之所以被修的证据链，删掉会让后来的读者以为它们从未存在。
+> 修复后的复测见第十二节。
 
 ### K-01 · `InsightReveal` 分组宿主把整棵子树从无障碍树里剪掉 【严重】
 
@@ -500,3 +507,112 @@ node lib/kits/.kits/kits.mjs diff
 `installed/` 里的文件如果被人改过，`doctor` 的 `integrity` 会报出来；
 `adapters/` 里的 `finance-tokens.css` / `style-pack.ts` / `scene.tsx` 是产品自己的，
 永远不会被覆盖，也不会被算作"被改动的托管文件"。
+
+---
+
+## 十二、v0.1.1 回归 —— 第十节的五个缺口逐项复测
+
+Kits v0.1.1（`main` @ `9988c958`，tag `v0.1.1`）发布后，在同一分支
+`feature/style-cinematic-source-install` 上用**正式安装**重做了一遍。
+
+### 装了什么
+
+```bash
+node <kits>/packages/cli/kits.mjs add --target . --style cinematic \
+  --components animated-grid,data-cursor,insight-reveal --effects ambient-glow
+```
+
+| | v0.1.0 | v0.1.1 |
+|---|---|---|
+| `lock.source.commit` | `64279eaf` | **`9988c958`** |
+| `lock.registryVersion` | 0.1.0 | **0.1.1** |
+| 托管文件 | 42 | **43** |
+| 升到 0.1.1 的资产 | — | contracts / cli / insight-reveal / animated-grid / ambient-glow |
+| 保持 0.1.0 的资产 | — | cinematic / data-cursor / react-utils |
+
+只有真正变了的 5 个资产升版，其余 3 个保持 0.1.0 —— Installer 没有跟着"整体
+盖一个新版本号"。
+
+### 适配层所有权：实测不是承诺
+
+重装前先对 `lib/kits/adapters/` 的 9 个文件做了 sha256 快照。装完后：
+
+```
+适配层  2 新建 / 7 保留产品版本
+保留： style-cinematic.css · style-pack.ts · animated-grid.tsx · data-cursor.tsx
+      insight-reveal.tsx · effect-ambient-glow.css · README.md
+新建： style-cinematic.ts · effect-ambient-glow.ts
+```
+
+**9 个已存在文件 0 覆盖。** 连 v0.1.0 生成的 `style-cinematic.css` 都没重写
+（哪怕它的内容在 v0.1.1 里没变，Installer 也不碰）。`lock.adapters` 里
+`written` / `kept` 两个列表把这件事记录成了可审计的数据，不只是终端上的一行字。
+
+### `style-pack.ts`：那条手写缝被正式缝取代
+
+v0.1.0 时 `kits add` 只为 Style Pack 生成 **CSS 缝**，没有 TS 缝。于是上一轮
+只能由产品手写 `style-pack.ts`，而它不得不 `import … from "../installed/cinematic/index"`
+—— K-04 描述的那条"无路可走"。v0.1.1 生成了 `style-cinematic.ts` 之后，
+这条手写缝就没有存在理由了，按 doctor 自己给出的升级路径处理：
+
+```bash
+rm lib/kits/adapters/style-pack.ts        # 删掉手写版本
+node lib/kits/.kits/kits.mjs add …        # Installer 按 v0.1.1 模板初始化
+```
+
+现在是 1 行 `export * from "./style-cinematic"`。
+
+> 注意这是**文档化的升级路径**，不是绕过所有权：医生输出里原本就写着
+> 「想要新模板：删掉该文件再跑 `kits add`（只补不存在的）」。Installer 自己
+> 永远不会覆盖已有的适配层文件 —— 这一步必须由人来做决定。
+
+手写缝导出的 `stylePackMotionLanguage` / `stylePackMotionRoles` /
+`stylePackReducedMotion` 三个符号**从未被消费**（全仓搜索只有定义没有引用），
+因此随文件一起退休；正式缝提供的 `stylePackMotionVars` 是唯一的实际依赖，
+`app/layout.tsx` 一行未改就继续工作。
+
+### 逐项复测
+
+| | v0.1.0 实测 | v0.1.1 实测 |
+|---|---|---|
+| **K-01** | `getByRole(button)` → **0**，DOM 里 1 | `.kits-reveal__item[aria-hidden]` **0** 个；`role="presentation"` 3 个；reveal 内 button/heading 的 DOM 与无障碍树**逐项相等**（3=3、3=3） |
+| **K-02** | 触屏 `--kits-grid-cell` 仍是 64px（放大被 pack 吃掉） | 有效格 `calc(64px*1*2)`=**128px** → `calc(64px*1.5*2)`=**192px**，**×1.50**；触屏动画 `none`，细指针保留 `kits-grid-drift`；基准变量**没有被改**（契约改的是 scale） |
+| **K-03** | 打印「与 Kits 解析到同一 major」（无上游时无法验证） | 上游在场 → `[verified]`；上游缺席 → `[upstream-unavailable]` + `[compatible]` 并注明「**未做上游比对**」 |
+| **K-04** | 无 TS 缝，产品只能伸进 `installed/` | `adapters/style-cinematic.ts` + `style-pack.ts` + `effect-ambient-glow.ts`；产品代码**零** `installed/` 引用 |
+| **K-05** | 只有硬编码 RGB，无公开变量 | 13 个 `--kits-effect-ambient-*`；默认渐变与 v0.1.0 字面量**逐字相同**；祖先作用域覆盖生效且可完全还原 |
+| **K-06** | `kits add --style editorial` 会因 README 里的示例字符串失败 | 本次安装全程未被文档/注释里的 `@kits/*` 示例干扰 |
+
+### 关于 K-02 的探针：两个"看起来通过"的坑
+
+复测时发现原有的 K-02 探针本身是**错的**，两次都差点放过：
+
+1. **量错了变量。** 它量 `--kits-grid-cell`（基准），而 v0.1.1 刻意把基准与
+   缩放拆成两个名字 —— 基准**本来就该**恒为 64px。要看的是有效格
+   `--kits-grid-cell-size`。
+2. **量到了 0 却静默通过。** `--kits-grid-cell-size` 声明在 `.kits-grid`
+   **自己身上**，自定义属性只在声明元素及其后代可见；把 probe 挂到 `<body>`
+   上 `var()` 解析不出来，量到 0px。而 `0/0 = NaN`，
+   `Math.abs(NaN - 1.5) > 0.02` 恰好是 `false` —— 断言静默通过。
+
+修法：probe 挂进 `.kits-grid` **内部**，并且用 `offsetWidth`（布局像素）而不是
+`getBoundingClientRect()`。后者在有 `transform` 时返回**视觉**尺寸：hero 的视差层
+在桌面端是激活的（触屏端 `--kits-pointer-factor` 归零），会把 128px 量成
+130.56px，比值算出来 1.47 而不是 1.50。另外补了 `Number.isFinite` 兜底，
+**量不到时必须报错，不许静默通过**。
+
+### Finance 尚未跟进的一处（不是 blocker）
+
+`app/globals.css` 的 `@utility ambient-wash` / `hero-wash` 仍然是**产品自己**的
+三点布光实现，消费 `--finance-ambient-*`（→ `--ambient-*`）。Kits 的
+`.kits-effect-ambient-glow` 类**始终没有被套用**在任何一个元素上。
+
+这在 v0.1.0 是被迫的（效果包没有公开变量，产品只能自己重写整个渐变）；
+v0.1.1 之后它变成了一个**可选的整合**。本轮没有做，因为它会改变可见视觉 ——
+尤其 `hero-wash` 是刻意调亮、几何也不同（`52% 68% at 12% 0%` vs 契约的
+`60% 50% at 18% 8%`），迁移它属于美术方向决策而不是回归修复。
+
+值得记下的一处细节：`ambient-wash` 的**深色**取值与 Kits 的默认值逐位相同，
+而它写成 `color-mix(in srgb, var(--kits-color-accent) 16%, transparent)` —— 
+即跟随 pack 的 accent 走。Kits 的默认值是固定字面量。因此直接搬过去反而会
+**丢掉 pack 跟随能力**。真要整合，应该保留 `color-mix` 的颜色、只把几何交给
+契约变量。

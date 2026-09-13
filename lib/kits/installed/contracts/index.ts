@@ -6,8 +6,8 @@
  *
  * 消费方（产品 / 组件 / pack）一律从这里取：
  *
- *   import { motionToCssVars, assertStylePackMotion } from "./index";
- *   import type { StylePackMotion, StylePackProfile } from "./index";
+ *   import { motionToCssVars, assertStylePackMotion } from "@kits/contracts";
+ *   import type { StylePackMotion, StylePackProfile } from "@kits/contracts";
  *
  * 为什么要有这个包（而不是让各 pack 各自 re-export）：
  * 契约的编译函数 `motionToCssVars()` 曾经对消费方不可达 —— 它躺在

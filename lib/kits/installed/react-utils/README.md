@@ -14,7 +14,7 @@ import {
   resolveToneVars,
   type Intensity,
   type Tone,
-} from "./index";
+} from "@kits/react-utils";
 ```
 
 ---
@@ -36,7 +36,7 @@ components/data-cursor/data-cursor.tsx      →  ../_shared/env.ts
 2. **共享代码没有版本、没有边界、没有审计条目。** 它既不属于哪个组件，
    也不出现在 registry 里，因此"哪些代码进了产品"这件事对它是失效的。
 
-抽成包之后：每个组件 `dependencies: {"./index": "workspace:*"}`，
+抽成包之后：每个组件 `dependencies: {"@kits/react-utils": "workspace:*"}`，
 依赖图由 registry 显式声明，安装器按拓扑序解析，产品拿到的是**自足的一份源码**。
 
 ---

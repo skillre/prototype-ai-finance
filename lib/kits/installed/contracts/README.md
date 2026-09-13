@@ -10,12 +10,12 @@ import {
   ASSET_STATUS,
   type StylePackMotion,
   type StylePackProfile,
-} from "./index";
+} from "@kits/contracts";
 
-import type { Intensity, Tone } from "./index";
+import type { Intensity, Tone } from "@kits/contracts";
 ```
 
-CSS 侧：`import "./tokens.css";`
+CSS 侧：`import "@kits/contracts/tokens.css";`
 
 ---
 
@@ -73,13 +73,13 @@ CSS 侧：`import "./tokens.css";`
 
 ## 消费方怎么用
 
-**Style Pack 作者**：`import type { StylePackMotion } from "./index";`
+**Style Pack 作者**：`import type { StylePackMotion } from "@kits/contracts";`
 
 **产品（Local Link 模式）**：
 
 ```ts
-import { cinematicMotion } from "../cinematic/index";
-import { motionToCssVars } from "./index";
+import { cinematicMotion } from "@kits/style-cinematic";
+import { motionToCssVars } from "@kits/contracts";
 
 const vars = motionToCssVars(cinematicMotion); // 注入 <html> 的 inline style
 ```

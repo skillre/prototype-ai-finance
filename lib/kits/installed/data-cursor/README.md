@@ -16,7 +16,7 @@
 ## 1. 契约：产品只能这样调用
 
 ```tsx
-import { DataCursor } from "./index";
+import { DataCursor } from "@kits/data-cursor";
 
 <DataCursor mode="ring" inspection hideNative>
   <button

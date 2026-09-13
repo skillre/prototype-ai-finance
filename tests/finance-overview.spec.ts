@@ -102,24 +102,23 @@ test.describe("洞察层", () => {
   test("洞察可以跳到真实目的地", async ({ page }) => {
     await openLedger(page, "/finance")
     /*
-     * 选择器修正（唯一一处，业务断言一行未改）。
+     * 语义断言（K-01 回归的**守卫**）。
      *
-     * 本来这里用 getByRole("button", …)，它走无障碍树。接上 Kits 的
-     * `InsightReveal step="group"` 之后它匹配不到了 —— 因为 v0.1.0 的
-     * 分组宿主 `.kits-reveal__item` 带了 `aria-hidden="true"`，
-     * 而 aria-hidden 会**把整个子树从无障碍树里剪掉**。
+     * 这条断言曾经被迫退回 DOM 选择器：接入 Kits 的 `InsightReveal step="group"`
+     * 后 `getByRole` 命中 0 个 —— v0.1.0 的分组宿主 `.kits-reveal__item` 带了
+     * `aria-hidden="true"`，而 aria-hidden 会把**整棵子树**从无障碍树里剪掉
+     * （display:contents 拦不住剪枝，两者曾被混淆）。
      *
-     * 组件自己的注释写的是「display:contents 不剪枝，子元素照常暴露」——
-     * 这句话对 display:contents 成立，但 aria-hidden 是另一回事，两者被混淆了。
-     * 实测：getByRole 命中 0 个，button:has-text 命中 1 个。
+     * Kits v0.1.1 已修：宿主改为 `role="presentation"`，只声明"这个 div 没有
+     * 语义"，不剪内容。实测无障碍树与 DOM 的角色数量逐项相等。
      *
-     * 这是 Kits v0.1.0 的**真实缺陷**（无障碍回归，且会打断所有基于 role 的
-     * 查询），已记录在 docs/kits-integration.md「契约缺口」，需在 Kits 修复。
-     * 本次不修改 Kits，因此这里退回 DOM 选择器；断言的目标 URL 与业务语义不变。
+     * 这里故意**用回 getByRole**：它不只是"能过"，而是这个缺陷的探测器 ——
+     * 一旦 aria-hidden 回到宿主上，这条断言会立刻再次失败。若改回 DOM 选择器，
+     * 测试就失去了这个能力。
      */
     await page
       .getByTestId("insight-layer")
-      .locator("button", { hasText: "查看该科目明细" })
+      .getByRole("button", { name: "查看该科目明细" })
       .click()
     await expect(page).toHaveURL(/\/finance\/analysis\?category=software/)
   })

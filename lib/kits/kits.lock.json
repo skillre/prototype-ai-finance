@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "registryVersion": "0.1.0",
-  "generatedAt": "2026-09-13T04:43:39.032Z",
+  "registryVersion": "0.1.1",
+  "generatedAt": "2026-09-13T06:45:47.243Z",
   "source": {
     "kind": "source-installation",
     "repo": "prototype-kits",
-    "commit": "64279eaf56bb7dd19daad96f1bcf43950256f8fe",
+    "commit": "9988c958dd505459912120f2ffcd7cedd8895dae",
     "dirty": false
   },
   "layout": {
@@ -14,34 +14,38 @@
     "agentRoot": "lib/kits/.kits",
     "lockFile": "lib/kits/kits.lock.json"
   },
+  "compat": {
+    "declaredReactRange": "^18.0.0 || ^19.0.0",
+    "kitsTypesVersion": "19.3.0"
+  },
   "assets": [
     {
       "id": "ambient-glow",
       "type": "effect",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "status": "approved",
       "apiVersion": null,
       "files": [
         {
           "path": "lib/kits/installed/ambient-glow/ambient-glow.css",
-          "checksum": "e93a8e0900d7b9f1"
+          "checksum": "54cc406c85db42ec"
         }
       ]
     },
     {
       "id": "animated-grid",
       "type": "component",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "status": "approved",
       "apiVersion": "1.0.0",
       "files": [
         {
           "path": "lib/kits/installed/animated-grid/animated-grid.css",
-          "checksum": "5bffe2b5d5aa14c7"
+          "checksum": "c26749dc97110bcd"
         },
         {
           "path": "lib/kits/installed/animated-grid/animated-grid.tsx",
-          "checksum": "1b8ad50e5ee8f7c3"
+          "checksum": "9add3fecf833fcfc"
         },
         {
           "path": "lib/kits/installed/animated-grid/index.ts",
@@ -49,11 +53,11 @@
         },
         {
           "path": "lib/kits/installed/animated-grid/manifest.json",
-          "checksum": "b899066ec357850d"
+          "checksum": "00d1d94b053b42dd"
         },
         {
           "path": "lib/kits/installed/animated-grid/README.md",
-          "checksum": "f0cdd58c36680256"
+          "checksum": "23411dfcfac598c3"
         }
       ]
     },
@@ -66,7 +70,7 @@
       "files": [
         {
           "path": "lib/kits/installed/cinematic/index.ts",
-          "checksum": "6163523762f44371"
+          "checksum": "88f7c812a4582206"
         },
         {
           "path": "lib/kits/installed/cinematic/manifest.json",
@@ -78,7 +82,7 @@
         },
         {
           "path": "lib/kits/installed/cinematic/README.md",
-          "checksum": "d199379b8363ffcf"
+          "checksum": "691f7311e6bc8285"
         },
         {
           "path": "lib/kits/installed/cinematic/SKILL.md",
@@ -93,21 +97,25 @@
     {
       "id": "cli",
       "type": "package",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "status": "approved",
       "apiVersion": "1.0.0",
       "files": [
         {
           "path": "lib/kits/.kits/kits.mjs",
-          "checksum": "3bc2157eb6762a36"
+          "checksum": "1e9958a88f2ac8b4"
         },
         {
           "path": "lib/kits/.kits/lib/adapters.mjs",
-          "checksum": "b2175edec7127141"
+          "checksum": "ad796921bcbf4817"
+        },
+        {
+          "path": "lib/kits/.kits/lib/boundary.mjs",
+          "checksum": "ef7d43d549f19f49"
         },
         {
           "path": "lib/kits/.kits/lib/compat.mjs",
-          "checksum": "f33014f349c7f956"
+          "checksum": "b33403e6a5de29d9"
         },
         {
           "path": "lib/kits/.kits/lib/errors.mjs",
@@ -115,11 +123,11 @@
         },
         {
           "path": "lib/kits/.kits/lib/installer.mjs",
-          "checksum": "b6ae686637f8faa8"
+          "checksum": "14e306e68ddbe048"
         },
         {
           "path": "lib/kits/.kits/lib/lock.mjs",
-          "checksum": "58d7341cd76edf20"
+          "checksum": "3af1502d36aaf479"
         },
         {
           "path": "lib/kits/.kits/lib/packaging.mjs",
@@ -131,14 +139,14 @@
         },
         {
           "path": "lib/kits/.kits/README.md",
-          "checksum": "50565eebfb22e0df"
+          "checksum": "4672202e5eba1f16"
         }
       ]
     },
     {
       "id": "contracts",
       "type": "package",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "status": "approved",
       "apiVersion": "1.0.0",
       "files": [
@@ -148,15 +156,15 @@
         },
         {
           "path": "lib/kits/installed/contracts/index.ts",
-          "checksum": "c0943aacbba15928"
+          "checksum": "aa823f32822b652b"
         },
         {
           "path": "lib/kits/installed/contracts/README.md",
-          "checksum": "9c8d69346fbd2a5d"
+          "checksum": "a5b0fd89d596c04f"
         },
         {
           "path": "lib/kits/installed/contracts/tokens.css",
-          "checksum": "c0917533cd8052b2"
+          "checksum": "5ecf4a2bcc385cee"
         }
       ]
     },
@@ -185,14 +193,14 @@
         },
         {
           "path": "lib/kits/installed/data-cursor/README.md",
-          "checksum": "42d4664d310cfc70"
+          "checksum": "6dd713a1dec1147e"
         }
       ]
     },
     {
       "id": "insight-reveal",
       "type": "component",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "status": "approved",
       "apiVersion": "1.0.0",
       "files": [
@@ -202,19 +210,19 @@
         },
         {
           "path": "lib/kits/installed/insight-reveal/insight-reveal.css",
-          "checksum": "cec527c6e0437c50"
+          "checksum": "9bc4b70c534e515f"
         },
         {
           "path": "lib/kits/installed/insight-reveal/insight-reveal.tsx",
-          "checksum": "e172abb6d4f6bef1"
+          "checksum": "b7a92ab495ce4ae3"
         },
         {
           "path": "lib/kits/installed/insight-reveal/manifest.json",
-          "checksum": "4ff1ad2dbf71024a"
+          "checksum": "2f5980bb6903cd1c"
         },
         {
           "path": "lib/kits/installed/insight-reveal/README.md",
-          "checksum": "3f76d8befccf47f4"
+          "checksum": "980826585aedabe6"
         }
       ]
     },
@@ -227,7 +235,7 @@
       "files": [
         {
           "path": "lib/kits/installed/react-utils/contract.ts",
-          "checksum": "2391f83c6fc212d3"
+          "checksum": "34dfad0239454221"
         },
         {
           "path": "lib/kits/installed/react-utils/env.ts",
@@ -239,7 +247,7 @@
         },
         {
           "path": "lib/kits/installed/react-utils/README.md",
-          "checksum": "53d3e05a73dbaff5"
+          "checksum": "2cf13978474aa659"
         },
         {
           "path": "lib/kits/installed/react-utils/use-element-pointer.ts",
@@ -281,17 +289,22 @@
   "files": [
     {
       "path": "lib/kits/.kits/kits.mjs",
-      "checksum": "3bc2157eb6762a36",
+      "checksum": "1e9958a88f2ac8b4",
       "assetId": "cli"
     },
     {
       "path": "lib/kits/.kits/lib/adapters.mjs",
-      "checksum": "b2175edec7127141",
+      "checksum": "ad796921bcbf4817",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/boundary.mjs",
+      "checksum": "ef7d43d549f19f49",
       "assetId": "cli"
     },
     {
       "path": "lib/kits/.kits/lib/compat.mjs",
-      "checksum": "f33014f349c7f956",
+      "checksum": "b33403e6a5de29d9",
       "assetId": "cli"
     },
     {
@@ -301,12 +314,12 @@
     },
     {
       "path": "lib/kits/.kits/lib/installer.mjs",
-      "checksum": "b6ae686637f8faa8",
+      "checksum": "14e306e68ddbe048",
       "assetId": "cli"
     },
     {
       "path": "lib/kits/.kits/lib/lock.mjs",
-      "checksum": "58d7341cd76edf20",
+      "checksum": "3af1502d36aaf479",
       "assetId": "cli"
     },
     {
@@ -321,22 +334,22 @@
     },
     {
       "path": "lib/kits/.kits/README.md",
-      "checksum": "50565eebfb22e0df",
+      "checksum": "4672202e5eba1f16",
       "assetId": "cli"
     },
     {
       "path": "lib/kits/installed/ambient-glow/ambient-glow.css",
-      "checksum": "e93a8e0900d7b9f1",
+      "checksum": "54cc406c85db42ec",
       "assetId": "ambient-glow"
     },
     {
       "path": "lib/kits/installed/animated-grid/animated-grid.css",
-      "checksum": "5bffe2b5d5aa14c7",
+      "checksum": "c26749dc97110bcd",
       "assetId": "animated-grid"
     },
     {
       "path": "lib/kits/installed/animated-grid/animated-grid.tsx",
-      "checksum": "1b8ad50e5ee8f7c3",
+      "checksum": "9add3fecf833fcfc",
       "assetId": "animated-grid"
     },
     {
@@ -346,17 +359,17 @@
     },
     {
       "path": "lib/kits/installed/animated-grid/manifest.json",
-      "checksum": "b899066ec357850d",
+      "checksum": "00d1d94b053b42dd",
       "assetId": "animated-grid"
     },
     {
       "path": "lib/kits/installed/animated-grid/README.md",
-      "checksum": "f0cdd58c36680256",
+      "checksum": "23411dfcfac598c3",
       "assetId": "animated-grid"
     },
     {
       "path": "lib/kits/installed/cinematic/index.ts",
-      "checksum": "6163523762f44371",
+      "checksum": "88f7c812a4582206",
       "assetId": "cinematic"
     },
     {
@@ -371,7 +384,7 @@
     },
     {
       "path": "lib/kits/installed/cinematic/README.md",
-      "checksum": "d199379b8363ffcf",
+      "checksum": "691f7311e6bc8285",
       "assetId": "cinematic"
     },
     {
@@ -391,17 +404,17 @@
     },
     {
       "path": "lib/kits/installed/contracts/index.ts",
-      "checksum": "c0943aacbba15928",
+      "checksum": "aa823f32822b652b",
       "assetId": "contracts"
     },
     {
       "path": "lib/kits/installed/contracts/README.md",
-      "checksum": "9c8d69346fbd2a5d",
+      "checksum": "a5b0fd89d596c04f",
       "assetId": "contracts"
     },
     {
       "path": "lib/kits/installed/contracts/tokens.css",
-      "checksum": "c0917533cd8052b2",
+      "checksum": "5ecf4a2bcc385cee",
       "assetId": "contracts"
     },
     {
@@ -426,7 +439,7 @@
     },
     {
       "path": "lib/kits/installed/data-cursor/README.md",
-      "checksum": "42d4664d310cfc70",
+      "checksum": "6dd713a1dec1147e",
       "assetId": "data-cursor"
     },
     {
@@ -436,27 +449,27 @@
     },
     {
       "path": "lib/kits/installed/insight-reveal/insight-reveal.css",
-      "checksum": "cec527c6e0437c50",
+      "checksum": "9bc4b70c534e515f",
       "assetId": "insight-reveal"
     },
     {
       "path": "lib/kits/installed/insight-reveal/insight-reveal.tsx",
-      "checksum": "e172abb6d4f6bef1",
+      "checksum": "b7a92ab495ce4ae3",
       "assetId": "insight-reveal"
     },
     {
       "path": "lib/kits/installed/insight-reveal/manifest.json",
-      "checksum": "4ff1ad2dbf71024a",
+      "checksum": "2f5980bb6903cd1c",
       "assetId": "insight-reveal"
     },
     {
       "path": "lib/kits/installed/insight-reveal/README.md",
-      "checksum": "3f76d8befccf47f4",
+      "checksum": "980826585aedabe6",
       "assetId": "insight-reveal"
     },
     {
       "path": "lib/kits/installed/react-utils/contract.ts",
-      "checksum": "2391f83c6fc212d3",
+      "checksum": "34dfad0239454221",
       "assetId": "react-utils"
     },
     {
@@ -471,7 +484,7 @@
     },
     {
       "path": "lib/kits/installed/react-utils/README.md",
-      "checksum": "53d3e05a73dbaff5",
+      "checksum": "2cf13978474aa659",
       "assetId": "react-utils"
     },
     {
@@ -489,5 +502,21 @@
       "checksum": "217b03dfa191f58d",
       "assetId": "react-utils"
     }
-  ]
+  ],
+  "adapters": {
+    "templateVersion": "0.1.1",
+    "written": [
+      "lib/kits/adapters/style-pack.ts"
+    ],
+    "kept": [
+      "lib/kits/adapters/style-cinematic.css",
+      "lib/kits/adapters/style-cinematic.ts",
+      "lib/kits/adapters/animated-grid.tsx",
+      "lib/kits/adapters/data-cursor.tsx",
+      "lib/kits/adapters/insight-reveal.tsx",
+      "lib/kits/adapters/effect-ambient-glow.css",
+      "lib/kits/adapters/effect-ambient-glow.ts",
+      "lib/kits/adapters/README.md"
+    ]
+  }
 }

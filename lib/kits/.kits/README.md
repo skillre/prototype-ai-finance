@@ -114,7 +114,7 @@ lib/kits/
 安装后产品不依赖任何 `node_modules` 解析：
 
 ```diff
-- import { useReveal } from "../installed/react-utils/index";
+- import { useReveal } from "@kits/react-utils";
 + import { useReveal } from "../react-utils/index";
 ```
 

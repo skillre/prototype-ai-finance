@@ -49,7 +49,7 @@ cinematic 的答案是**用光分层**：越靠前的元素越亮、越大、越
 ## 3. 使用方式
 
 ```tsx
-import "./tokens.css";
+import "@kits/style-cinematic/tokens.css";
 
 <section data-kits-pack="cinematic" className="kits-surface">
   {/* 环境光层：容器级一次绘制，z-index: -1 */}

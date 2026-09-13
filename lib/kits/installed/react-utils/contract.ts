@@ -111,5 +111,5 @@ export function resolveToneVars(
  * 一类问题：同一份契约有两个副本，两边会各自漂移，而消费方无从判断哪份是真的。
  *
  * 现在只有一份，在 @kits/contracts：
- *   import { motionToCssVars, type StylePackMotion } from "../contracts/index";
+ *   import { motionToCssVars, type StylePackMotion } from "@kits/contracts";
  * ======================================================================== */

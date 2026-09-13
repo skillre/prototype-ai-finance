@@ -7,7 +7,7 @@ import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { DEFAULT_LOCALE } from "@/lib/i18n";
-import { stylePackMotionVars } from "@/lib/kits/adapters/style-pack";
+import { stylePackMeta, stylePackMotionVars } from "@/lib/kits/adapters/style-pack";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,8 +39,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         `[data-kits-pack="cinematic"]` 里，因此页面必须声明一次；
         放在 <html> 上的原因是：对话框 / 抽屉 / toast 都通过 portal
         挂到 body 层，声明在页面容器里会让它们拿不到 pack 取值。
+
+        取值来自适配层（stylePackMeta.id），不在这里写字面量 ——
+        换 pack 时"当前是哪一套"只有一个来源，产品不会与适配层脱钩。
       */
-      data-kits-pack="cinematic"
+      data-kits-pack={stylePackMeta.id}
       /*
         动效刻度由 pack 的 motion.ts 编译而来（见 lib/kits/adapters/style-pack.ts —
         它调用的是 Kits 自己的 motionToCssVars()，不是产品手抄的映射）。
