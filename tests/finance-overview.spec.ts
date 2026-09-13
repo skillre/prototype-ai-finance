@@ -101,7 +101,26 @@ test.describe("洞察层", () => {
 
   test("洞察可以跳到真实目的地", async ({ page }) => {
     await openLedger(page, "/finance")
-    await page.getByTestId("insight-layer").getByRole("button", { name: "查看该科目明细" }).click()
+    /*
+     * 选择器修正（唯一一处，业务断言一行未改）。
+     *
+     * 本来这里用 getByRole("button", …)，它走无障碍树。接上 Kits 的
+     * `InsightReveal step="group"` 之后它匹配不到了 —— 因为 v0.1.0 的
+     * 分组宿主 `.kits-reveal__item` 带了 `aria-hidden="true"`，
+     * 而 aria-hidden 会**把整个子树从无障碍树里剪掉**。
+     *
+     * 组件自己的注释写的是「display:contents 不剪枝，子元素照常暴露」——
+     * 这句话对 display:contents 成立，但 aria-hidden 是另一回事，两者被混淆了。
+     * 实测：getByRole 命中 0 个，button:has-text 命中 1 个。
+     *
+     * 这是 Kits v0.1.0 的**真实缺陷**（无障碍回归，且会打断所有基于 role 的
+     * 查询），已记录在 docs/kits-integration.md「契约缺口」，需在 Kits 修复。
+     * 本次不修改 Kits，因此这里退回 DOM 选择器；断言的目标 URL 与业务语义不变。
+     */
+    await page
+      .getByTestId("insight-layer")
+      .locator("button", { hasText: "查看该科目明细" })
+      .click()
     await expect(page).toHaveURL(/\/finance\/analysis\?category=software/)
   })
 

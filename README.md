@@ -73,17 +73,37 @@ lib/finance-insights.ts 七类洞察
 因此"每个图表各造一份数"在结构上不可能发生：**现金头寸、月度序列、预算实际发生额、
 账龄、凭证金额全部来自同一份流水**。
 
-## 设计系统 V5 — Financial Instrument
+## 视觉语言 — Prototype Kits · `cinematic` Style Pack（Source Installation）
 
-- **画布**：暖白纸（不是冷灰）——读的是报表，不是控制台。
-- **两个产品色**：深青 `--brand`（机构感，刻意不用"AI 紫"）+ 黄铜 `--data-accent`（预算与预测）。
-- **图表语义色**：`--data-income` 青 / `--data-expense` 陶土橙 / `--data-budget` 黄铜 / `--data-risk` 红。
-  同一张图里的每个颜色都在回答"这条线是什么"。
-- **更紧的圆角**（`--radius: 0.5rem`）：这是一台仪表，不是一组卡片。
-- **Light**：暖白纸 + 纯白面，靠亮度差分层而不靠描边。**Dark**：石墨底 + 下沉的 Hero，深青从中透出来。
-- **一屏一个光源**：带 Hero 的页面关掉全局环境光。
+产品的视觉语言不再由本仓库自己定义，而是**从已安装的 Prototype Kits 源码取值**。
 
-排版沿用工厂的中文红线：中文不加负字距、行高高于拉丁方案、字体栈以 Geist 起头回落 PingFang/YaHei。
+```
+Finance JSX（类名与文案一行没改）
+  ↑ Finance 语义令牌（--background / --brand / --hairline / --data-income …）
+  ↑ lib/kits/adapters/finance-tokens.css        ← 产品所有
+  ↑ lib/kits/installed/**（kits add 装进来的 Kits 源码）
+```
+
+- **安装**：`prototype-kits@v0.1.0`（`main` @ `64279eaf`），8 个资产 / 42 个托管文件，
+  清单在 `lib/kits/kits.lock.json`（含来源 commit 与逐文件 checksum）。
+- **分发方式**：Source Installation。产品里**没有** `@kits/*` 依赖、没有 `link:`、
+  不需要 `transpilePackages` / `externalDir` / `turbopack.root` /
+  `allowImportingTsExtensions` —— `next.config.ts` 与 `tsconfig.json` 都未改动。
+  把 `prototype-kits` 仓库移走，typecheck / test / build 仍然通过。
+- **签名组件**：`AnimatedGrid`（场景背板）、`DataCursor`（账本行的精确读数）、
+  `InsightReveal`（结论的阅读节奏）；效果包 `ambient-glow`（三点环境光）。
+- **两个产品色仍然属于这个产品**：深青 `--brand`（机构感，刻意不用"AI 紫"）
+  + 黄铜 `--data-accent`（预算与预测）——只是取值改为指向 pack 的 palette。
+  图表语义色（收入 / 支出 / 预算 / 风险）映射到 pack 的 `--kits-data-series-*`
+  与强调色，**同一张图里的每个颜色仍在回答"这条线是什么"**。
+- **圆角 / 投影 / 排版刻度 / 间距节奏 / 动效时长**全部由 pack 决定；
+  动效时长经 `motionToCssVars()` 编译成 CSS 变量注入 `<html>`，产品里没有一份拷贝。
+
+完整记录（交付链路、与 Local Link 实验的逐项对照、发现的问题）见
+[`docs/kits-integration.md`](docs/kits-integration.md)。
+
+排版沿用工厂的中文红线：中文不加负字距、行高高于拉丁方案、CJK 回退栈显式接在
+pack 的拉丁字体之后。
 
 ## 本地化
 
@@ -106,7 +126,7 @@ lib/finance-insights.ts 七类洞察
 ## 测试
 
 ```bash
-pnpm test    # 119 个 Playwright 断言，8 个 spec
+pnpm test    # 120 个 Playwright 断言，9 个 spec
 ```
 
 | spec | 覆盖 |
@@ -148,6 +168,14 @@ lib/
   format.ts / motion-presets.ts / i18n/
 stores/finance-store.ts       # 用户改了什麼（假设 / 筛选 / 分页 / 选中记录）
 components/                   # 从工厂继承的复用件
-tests/                        # 8 个 spec
+lib/kits/                     # ← Prototype Kits 安装区（见 docs/kits-integration.md）
+  installed/                  #   Kits 托管源码（kits add 覆盖，产品只读）
+  adapters/                   #   产品适配层（Kits 永不覆盖）
+  .kits/                      #   Installer 副本（脱离 Kits 仓库也能跑 doctor/diff）
+  kits.lock.json              #   安装清单（来源 commit + 逐文件 checksum）
+tests/                        # 9 个 spec
+docs/kits-integration.md      # 视觉语言来源与集成记录
 .qa/shots.mjs                 # Browser QA 截图与错误检查
+.qa/kits-qa.mjs               # Browser QA（强判据：视口/文档宽度/实际横向滚动 + 降级探针）
+.qa/standalone.sh             # Standalone 验证（隐藏 Kits 仓库后跑完整套关卡）
 ```

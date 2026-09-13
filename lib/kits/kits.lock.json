@@ -1,0 +1,493 @@
+{
+  "schemaVersion": 1,
+  "registryVersion": "0.1.0",
+  "generatedAt": "2026-09-13T04:43:39.032Z",
+  "source": {
+    "kind": "source-installation",
+    "repo": "prototype-kits",
+    "commit": "64279eaf56bb7dd19daad96f1bcf43950256f8fe",
+    "dirty": false
+  },
+  "layout": {
+    "installedRoot": "lib/kits/installed",
+    "adapterRoot": "lib/kits/adapters",
+    "agentRoot": "lib/kits/.kits",
+    "lockFile": "lib/kits/kits.lock.json"
+  },
+  "assets": [
+    {
+      "id": "ambient-glow",
+      "type": "effect",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": null,
+      "files": [
+        {
+          "path": "lib/kits/installed/ambient-glow/ambient-glow.css",
+          "checksum": "e93a8e0900d7b9f1"
+        }
+      ]
+    },
+    {
+      "id": "animated-grid",
+      "type": "component",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": "1.0.0",
+      "files": [
+        {
+          "path": "lib/kits/installed/animated-grid/animated-grid.css",
+          "checksum": "5bffe2b5d5aa14c7"
+        },
+        {
+          "path": "lib/kits/installed/animated-grid/animated-grid.tsx",
+          "checksum": "1b8ad50e5ee8f7c3"
+        },
+        {
+          "path": "lib/kits/installed/animated-grid/index.ts",
+          "checksum": "ee03f0b4e46a2779"
+        },
+        {
+          "path": "lib/kits/installed/animated-grid/manifest.json",
+          "checksum": "b899066ec357850d"
+        },
+        {
+          "path": "lib/kits/installed/animated-grid/README.md",
+          "checksum": "f0cdd58c36680256"
+        }
+      ]
+    },
+    {
+      "id": "cinematic",
+      "type": "style",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": null,
+      "files": [
+        {
+          "path": "lib/kits/installed/cinematic/index.ts",
+          "checksum": "6163523762f44371"
+        },
+        {
+          "path": "lib/kits/installed/cinematic/manifest.json",
+          "checksum": "fc5d5c2b9f5da7f2"
+        },
+        {
+          "path": "lib/kits/installed/cinematic/motion.ts",
+          "checksum": "eda2f2ffa7330084"
+        },
+        {
+          "path": "lib/kits/installed/cinematic/README.md",
+          "checksum": "d199379b8363ffcf"
+        },
+        {
+          "path": "lib/kits/installed/cinematic/SKILL.md",
+          "checksum": "8d5b77e07455d1fd"
+        },
+        {
+          "path": "lib/kits/installed/cinematic/tokens.css",
+          "checksum": "57f84025b5efef92"
+        }
+      ]
+    },
+    {
+      "id": "cli",
+      "type": "package",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": "1.0.0",
+      "files": [
+        {
+          "path": "lib/kits/.kits/kits.mjs",
+          "checksum": "3bc2157eb6762a36"
+        },
+        {
+          "path": "lib/kits/.kits/lib/adapters.mjs",
+          "checksum": "b2175edec7127141"
+        },
+        {
+          "path": "lib/kits/.kits/lib/compat.mjs",
+          "checksum": "f33014f349c7f956"
+        },
+        {
+          "path": "lib/kits/.kits/lib/errors.mjs",
+          "checksum": "c535ad14b8bf0524"
+        },
+        {
+          "path": "lib/kits/.kits/lib/installer.mjs",
+          "checksum": "b6ae686637f8faa8"
+        },
+        {
+          "path": "lib/kits/.kits/lib/lock.mjs",
+          "checksum": "58d7341cd76edf20"
+        },
+        {
+          "path": "lib/kits/.kits/lib/packaging.mjs",
+          "checksum": "da15bc0dbbf8469e"
+        },
+        {
+          "path": "lib/kits/.kits/lib/registry.mjs",
+          "checksum": "d1cbb2033e9652fd"
+        },
+        {
+          "path": "lib/kits/.kits/README.md",
+          "checksum": "50565eebfb22e0df"
+        }
+      ]
+    },
+    {
+      "id": "contracts",
+      "type": "package",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": "1.0.0",
+      "files": [
+        {
+          "path": "lib/kits/installed/contracts/contract.ts",
+          "checksum": "8bfa2909c4f898ef"
+        },
+        {
+          "path": "lib/kits/installed/contracts/index.ts",
+          "checksum": "c0943aacbba15928"
+        },
+        {
+          "path": "lib/kits/installed/contracts/README.md",
+          "checksum": "9c8d69346fbd2a5d"
+        },
+        {
+          "path": "lib/kits/installed/contracts/tokens.css",
+          "checksum": "c0917533cd8052b2"
+        }
+      ]
+    },
+    {
+      "id": "data-cursor",
+      "type": "component",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": "1.0.0",
+      "files": [
+        {
+          "path": "lib/kits/installed/data-cursor/data-cursor.css",
+          "checksum": "e788350f84f395a6"
+        },
+        {
+          "path": "lib/kits/installed/data-cursor/data-cursor.tsx",
+          "checksum": "9dc387476208eefe"
+        },
+        {
+          "path": "lib/kits/installed/data-cursor/index.ts",
+          "checksum": "b8dbae7bd62fb2f0"
+        },
+        {
+          "path": "lib/kits/installed/data-cursor/manifest.json",
+          "checksum": "dcd23a89e36618ff"
+        },
+        {
+          "path": "lib/kits/installed/data-cursor/README.md",
+          "checksum": "42d4664d310cfc70"
+        }
+      ]
+    },
+    {
+      "id": "insight-reveal",
+      "type": "component",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": "1.0.0",
+      "files": [
+        {
+          "path": "lib/kits/installed/insight-reveal/index.ts",
+          "checksum": "acbda8922be189b0"
+        },
+        {
+          "path": "lib/kits/installed/insight-reveal/insight-reveal.css",
+          "checksum": "cec527c6e0437c50"
+        },
+        {
+          "path": "lib/kits/installed/insight-reveal/insight-reveal.tsx",
+          "checksum": "e172abb6d4f6bef1"
+        },
+        {
+          "path": "lib/kits/installed/insight-reveal/manifest.json",
+          "checksum": "4ff1ad2dbf71024a"
+        },
+        {
+          "path": "lib/kits/installed/insight-reveal/README.md",
+          "checksum": "3f76d8befccf47f4"
+        }
+      ]
+    },
+    {
+      "id": "react-utils",
+      "type": "package",
+      "version": "0.1.0",
+      "status": "approved",
+      "apiVersion": "1.0.0",
+      "files": [
+        {
+          "path": "lib/kits/installed/react-utils/contract.ts",
+          "checksum": "2391f83c6fc212d3"
+        },
+        {
+          "path": "lib/kits/installed/react-utils/env.ts",
+          "checksum": "7d49664d9df7af4c"
+        },
+        {
+          "path": "lib/kits/installed/react-utils/index.ts",
+          "checksum": "ac99cba482f4e30d"
+        },
+        {
+          "path": "lib/kits/installed/react-utils/README.md",
+          "checksum": "53d3e05a73dbaff5"
+        },
+        {
+          "path": "lib/kits/installed/react-utils/use-element-pointer.ts",
+          "checksum": "5c2b6574b45a7f2d"
+        },
+        {
+          "path": "lib/kits/installed/react-utils/use-parallax-layers.ts",
+          "checksum": "e54657eb5deab3e5"
+        },
+        {
+          "path": "lib/kits/installed/react-utils/use-reveal.ts",
+          "checksum": "217b03dfa191f58d"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "cinematic",
+      "to": "contracts",
+      "requirement": "*"
+    },
+    {
+      "from": "animated-grid",
+      "to": "react-utils",
+      "requirement": "*"
+    },
+    {
+      "from": "data-cursor",
+      "to": "react-utils",
+      "requirement": "*"
+    },
+    {
+      "from": "insight-reveal",
+      "to": "react-utils",
+      "requirement": "*"
+    }
+  ],
+  "files": [
+    {
+      "path": "lib/kits/.kits/kits.mjs",
+      "checksum": "3bc2157eb6762a36",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/adapters.mjs",
+      "checksum": "b2175edec7127141",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/compat.mjs",
+      "checksum": "f33014f349c7f956",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/errors.mjs",
+      "checksum": "c535ad14b8bf0524",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/installer.mjs",
+      "checksum": "b6ae686637f8faa8",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/lock.mjs",
+      "checksum": "58d7341cd76edf20",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/packaging.mjs",
+      "checksum": "da15bc0dbbf8469e",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/lib/registry.mjs",
+      "checksum": "d1cbb2033e9652fd",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/.kits/README.md",
+      "checksum": "50565eebfb22e0df",
+      "assetId": "cli"
+    },
+    {
+      "path": "lib/kits/installed/ambient-glow/ambient-glow.css",
+      "checksum": "e93a8e0900d7b9f1",
+      "assetId": "ambient-glow"
+    },
+    {
+      "path": "lib/kits/installed/animated-grid/animated-grid.css",
+      "checksum": "5bffe2b5d5aa14c7",
+      "assetId": "animated-grid"
+    },
+    {
+      "path": "lib/kits/installed/animated-grid/animated-grid.tsx",
+      "checksum": "1b8ad50e5ee8f7c3",
+      "assetId": "animated-grid"
+    },
+    {
+      "path": "lib/kits/installed/animated-grid/index.ts",
+      "checksum": "ee03f0b4e46a2779",
+      "assetId": "animated-grid"
+    },
+    {
+      "path": "lib/kits/installed/animated-grid/manifest.json",
+      "checksum": "b899066ec357850d",
+      "assetId": "animated-grid"
+    },
+    {
+      "path": "lib/kits/installed/animated-grid/README.md",
+      "checksum": "f0cdd58c36680256",
+      "assetId": "animated-grid"
+    },
+    {
+      "path": "lib/kits/installed/cinematic/index.ts",
+      "checksum": "6163523762f44371",
+      "assetId": "cinematic"
+    },
+    {
+      "path": "lib/kits/installed/cinematic/manifest.json",
+      "checksum": "fc5d5c2b9f5da7f2",
+      "assetId": "cinematic"
+    },
+    {
+      "path": "lib/kits/installed/cinematic/motion.ts",
+      "checksum": "eda2f2ffa7330084",
+      "assetId": "cinematic"
+    },
+    {
+      "path": "lib/kits/installed/cinematic/README.md",
+      "checksum": "d199379b8363ffcf",
+      "assetId": "cinematic"
+    },
+    {
+      "path": "lib/kits/installed/cinematic/SKILL.md",
+      "checksum": "8d5b77e07455d1fd",
+      "assetId": "cinematic"
+    },
+    {
+      "path": "lib/kits/installed/cinematic/tokens.css",
+      "checksum": "57f84025b5efef92",
+      "assetId": "cinematic"
+    },
+    {
+      "path": "lib/kits/installed/contracts/contract.ts",
+      "checksum": "8bfa2909c4f898ef",
+      "assetId": "contracts"
+    },
+    {
+      "path": "lib/kits/installed/contracts/index.ts",
+      "checksum": "c0943aacbba15928",
+      "assetId": "contracts"
+    },
+    {
+      "path": "lib/kits/installed/contracts/README.md",
+      "checksum": "9c8d69346fbd2a5d",
+      "assetId": "contracts"
+    },
+    {
+      "path": "lib/kits/installed/contracts/tokens.css",
+      "checksum": "c0917533cd8052b2",
+      "assetId": "contracts"
+    },
+    {
+      "path": "lib/kits/installed/data-cursor/data-cursor.css",
+      "checksum": "e788350f84f395a6",
+      "assetId": "data-cursor"
+    },
+    {
+      "path": "lib/kits/installed/data-cursor/data-cursor.tsx",
+      "checksum": "9dc387476208eefe",
+      "assetId": "data-cursor"
+    },
+    {
+      "path": "lib/kits/installed/data-cursor/index.ts",
+      "checksum": "b8dbae7bd62fb2f0",
+      "assetId": "data-cursor"
+    },
+    {
+      "path": "lib/kits/installed/data-cursor/manifest.json",
+      "checksum": "dcd23a89e36618ff",
+      "assetId": "data-cursor"
+    },
+    {
+      "path": "lib/kits/installed/data-cursor/README.md",
+      "checksum": "42d4664d310cfc70",
+      "assetId": "data-cursor"
+    },
+    {
+      "path": "lib/kits/installed/insight-reveal/index.ts",
+      "checksum": "acbda8922be189b0",
+      "assetId": "insight-reveal"
+    },
+    {
+      "path": "lib/kits/installed/insight-reveal/insight-reveal.css",
+      "checksum": "cec527c6e0437c50",
+      "assetId": "insight-reveal"
+    },
+    {
+      "path": "lib/kits/installed/insight-reveal/insight-reveal.tsx",
+      "checksum": "e172abb6d4f6bef1",
+      "assetId": "insight-reveal"
+    },
+    {
+      "path": "lib/kits/installed/insight-reveal/manifest.json",
+      "checksum": "4ff1ad2dbf71024a",
+      "assetId": "insight-reveal"
+    },
+    {
+      "path": "lib/kits/installed/insight-reveal/README.md",
+      "checksum": "3f76d8befccf47f4",
+      "assetId": "insight-reveal"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/contract.ts",
+      "checksum": "2391f83c6fc212d3",
+      "assetId": "react-utils"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/env.ts",
+      "checksum": "7d49664d9df7af4c",
+      "assetId": "react-utils"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/index.ts",
+      "checksum": "ac99cba482f4e30d",
+      "assetId": "react-utils"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/README.md",
+      "checksum": "53d3e05a73dbaff5",
+      "assetId": "react-utils"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/use-element-pointer.ts",
+      "checksum": "5c2b6574b45a7f2d",
+      "assetId": "react-utils"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/use-parallax-layers.ts",
+      "checksum": "e54657eb5deab3e5",
+      "assetId": "react-utils"
+    },
+    {
+      "path": "lib/kits/installed/react-utils/use-reveal.ts",
+      "checksum": "217b03dfa191f58d",
+      "assetId": "react-utils"
+    }
+  ]
+}

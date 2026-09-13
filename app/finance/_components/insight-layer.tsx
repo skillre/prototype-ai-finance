@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowRightIcon, SparklesIcon } from "lucide-react"
 import { SectionHeading } from "@/components/prototype/section-heading"
-import { StaggerContainer } from "@/components/motion/stagger-container"
+import { RevealSequence } from "@/lib/kits/adapters/scene"
 import { useMessages } from "@/components/i18n/locale-provider"
 import { selectInsights, summariseInsights, type FinanceInsight } from "@/lib/finance-insights"
 import { RECEIVABLES } from "@/lib/finance-ledger"
@@ -75,7 +75,21 @@ export function InsightLayer({ limit = 3 }: { limit?: number }) {
         }
       />
 
-      <StaggerContainer className="flex flex-col">
+      {/*
+        结论是**叙事**（01 → 02 → 03），不是并列的三张卡片，因此用逐段
+        揭示把阅读顺序变成可见的节奏（Kits · InsightReveal，
+        经 lib/kits/adapters/scene.tsx 收敛成产品语义）。
+
+        这里换掉了原先的 StaggerContainer：两者的差别不只是实现——
+        旧方案在挂载时立刻播放（用户可能还没滚到这一屏），
+        新方案在**内容进入视口时**才按顺序揭示，这才是"节奏"该有的触发点。
+        代价是揭示只服务 `enter` 角色，关掉动效时信息零损失。
+
+        注意：产品这里**不需要**给每个子元素套宿主 div 来接步进序号 ——
+        v0.1.0 的 InsightReveal 自己建立宿主（.kits-reveal__item +
+        display: contents）。见 lib/kits/adapters/scene.tsx 的说明。
+      */}
+      <RevealSequence className="flex flex-col">
         {visible.map((insight, index) => (
           <InsightRow
             key={insight.id}
@@ -84,7 +98,7 @@ export function InsightLayer({ limit = 3 }: { limit?: number }) {
             onActivate={() => activate(insight)}
           />
         ))}
-      </StaggerContainer>
+      </RevealSequence>
     </section>
   )
 }
