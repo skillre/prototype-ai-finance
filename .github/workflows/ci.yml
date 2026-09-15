@@ -1,0 +1,155 @@
+# AI Finance · CI
+#
+# WHAT THIS IS
+# ------------
+# A **quality gate only**. CI answers "is this tree still internally consistent
+# and green?", and nothing else. It builds no preview environment, promotes
+# nothing, and holds no deployment credentials:
+#
+#   - 部署仍由 **Vercel Git Integration** 负责 —— push/tag 触发平台自己的构建，
+#     Vercel 是部署的一方，CI 不是。
+#   - 本 workflow **不调用任何 Vercel CLI、不读取任何部署凭据**，也不创建
+#     Preview/Production。`pnpm qa:online`（REMOTE 观察者）需要用户显式提供
+#     secret，因此永远不在 CI 里自动运行。
+#   - 部署授权是**独立的一次人工决定**（见 AGENTS.md 管理块、`docs/vercel-bootstrap.md`
+#     第 0 节，以及 `pnpm factory:deploy actions` 打出来的授权矩阵）。
+#     让 CI 顺手部署会把「人的决定」变成构建的副作用，这正是要避免的。
+#
+# WHY IT IS SELF-CONTAINED (and how to switch later)
+# -------------------------------------------------
+# The intended end state is to call the shared workflow from the root control
+# repo:
+#
+#     # uses: skillre/prototype-factory-control/.github/workflows/reusable-prototype-ci.yml@v1
+#
+# That call is **not** enabled here, and the reason is recorded, not guessed:
+# `factory.lock.json` keeps an `upstream/control-repo` entry whose `value` is
+# `null` — verified 2026-09-15 (the API probe on this machine returns 403, the web
+# URL returns 404, the path does not exist locally, and a whole-workspace grep only
+# ever matches the comment you are reading). A `uses:` pointing at a repository
+# that does not exist makes the workflow file invalid, so *every* run fails before
+# any job starts — CI would be dead, not merely degraded. A gate that never runs is
+# worse than a local one that does, and hard-coding an unverifiable `@v1` would look
+# pinned while nobody had ever resolved it.
+#
+# `pnpm factory:agents` enforces the pairing: the moment a real `uses:` line is
+# added, the lock must stop calling it unknown. So the switch is a two-line change
+# plus a lock update — deliberate, and impossible to do by accident.
+#
+# (This repository's own remote is unpublished too — `upstream/product-remote` in
+# the same lock, 404 on 2026-09-15 — so this workflow has no runtime yet. It is
+# written now so the contract is reviewable, not because it is already running.)
+#
+# SERIALIZATION (non-negotiable)
+# ------------------------------
+# `pnpm test` and `pnpm qa` must never run concurrently: Next 16's dev server locks
+# per *project* (`.next/dev/lock`), not per port, so two of them in one checkout
+# fight over the same tree. `browser-qa` therefore `needs:` the gate job — serial by
+# construction, not by ordering luck. Both jobs also pin port 3210 through
+# `.qa/qa.config.mjs`, and `reuseExistingServer` is `false`, so neither can adopt a
+# server it did not start. `pnpm factory:agents` checks that all of this stays true.
+
+name: CI
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reads the pinned version from `packageManager` in package.json — the same
+      # field the local toolchain uses. No second place to update.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # First gate, on purpose: the agent policy must hold before anything else is
+      # allowed to be called green.
+      - name: Agent policy gate
+        run: pnpm factory:agents
+
+      # Initialization boundary: this tree says `stage: "product"`, so no baseline
+      # or Reference Sample identity may survive on its initialization surface.
+      - name: Initialization boundary
+        run: pnpm factory:init
+
+      # Declared ↔ registered, both directions. The three ledger identities are
+      # declared in product-contract.json and registered by invariant() in
+      # tests/finance-data.spec.ts; a declaration with no test fails here.
+      - name: Product semantic contract
+        run: pnpm factory:contract
+
+      # Unlike a baseline, this product SHIPS a visual-manifest.json, so the gate is
+      # wired in. When the Kits checkout is absent (always, on a runner) the tool
+      # reports `[upstream-unavailable]` and says in as many words that it performed
+      # **no upstream comparison** — it never implies agreement it did not verify.
+      - name: Visual manifest
+        run: pnpm factory:manifest
+
+      # Prints the deploy authorization matrix and asserts the contract is intact.
+      # It authorizes nothing and touches no deployment: every act that would change
+      # platform state is listed as "needs explicit user authorization".
+      - name: Deployment authorization contract
+        run: pnpm factory:deploy actions
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Playwright E2E
+        run: pnpm test
+
+  browser-qa:
+    name: Browser QA (serial)
+    needs: quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Never runs at the same time as the E2E job above (`needs:`), and never
+      # touches a deployed URL — this only sweeps the server it starts itself.
+      - name: Browser QA sweep
+        run: pnpm qa

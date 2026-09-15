@@ -126,12 +126,14 @@ pack 的拉丁字体之后。
 ## 测试
 
 ```bash
-pnpm test    # 120 个 Playwright 断言，9 个 spec
+pnpm test    # 227 个 Playwright 断言，13 个 spec
 ```
+
+产品自己的 9 个 spec：
 
 | spec | 覆盖 |
 | --- | --- |
-| `finance-data.spec.ts` | 账本恒等式、派生指标一致性、确定性（不打开浏览器） |
+| `finance-data.spec.ts` | 账本恒等式（三条不变量在 `product-contract.json` 登记）、派生指标一致性、确定性（不打开浏览器） |
 | `finance-overview.spec.ts` | 跑道读数、图形读数、假设重算、洞察层、记录层 |
 | `finance-navigation.spec.ts` | 七个深链、侧栏导航、404、三态、主题、账户菜单 |
 | `finance-ledger.spec.ts` | 筛选 / 搜索 / 分页 / 凭证抽屉 / 登记一笔收支 |
@@ -140,6 +142,17 @@ pnpm test    # 120 个 Playwright 断言，9 个 spec
 | `finance-command.spec.ts` | 命令中心四组、账本检索、智能指令、AI 模式 |
 | `finance-responsive.spec.ts` | 1440×900 / 390×844、命中区、重排 |
 | `localization.spec.ts` | 全部路由与浮层的零英文泄漏审查 |
+
+继承自 Factory Core 的 4 个契约 spec（**它们守的是工具链本身，不是这个产品的页面**）：
+
+| spec | 覆盖 |
+| --- | --- |
+| `qa-probes.spec.ts` | 探针本身：`measure()` 在没量到时必须 fail loudly、DOM == AX 的配套扫描、样式基线判据 |
+| `online-qa.spec.ts` | REMOTE 观察者：身份先于 QA、不创建 token、LOCAL 与 REMOTE 共用同一套判据 |
+| `deploy-contract.spec.ts` | 部署身份 / 授权矩阵 / 受保护与 public 的区别 / `vercel curl` 的副作用披露 |
+| `release-contract.spec.ts` | 发布状态机、RC ↔ Production 的 SHA 一致、tag 规矩、文档与实现说的是同一件事 |
+
+> 门禁与它自己的测试都要走 `pnpm test`：**一个自身失效方式是"静默通过"的门，不能靠读代码来确认它是好的。**
 
 ## Factory 出身
 
@@ -152,6 +165,22 @@ pnpm test    # 120 个 Playwright 断言，9 个 spec
 - **移除**：上一个产品的全部业务实现（页面、数据、store、洞察与测试）。
 
 换句话说：**工厂提供基础设施与设计语言，产品提供构图与事实。**
+
+### 治理层（2026-09-15 对齐 Factory Core Policy v1.3.0）
+
+| 面 | 文件 | 门禁 |
+| --- | --- | --- |
+| 策略与并发 | `factory-policy.json` · `AGENTS.md` 的 `factory-core-policy` 管理块 | `pnpm factory:agents` |
+| 基线锁（两个轴：factory 1.2.0 / policy 1.3.0） | `factory.lock.json` | 同上 |
+| 初始化边界 | `init-contract.json` | `pnpm factory:init` |
+| 产品语义不变量（三条账本恒等式） | `product-contract.json` | `pnpm factory:contract` |
+| 视觉方向 | `visual-manifest.json` | `pnpm factory:manifest` |
+| 部署授权与身份 | `scripts/lib/deploy-contract.mjs` · `scripts/lib/release-contract.mjs` | `pnpm factory:deploy` |
+| Browser QA（LOCAL + REMOTE 共用一套判据） | `.qa/sweep.mjs` · `.qa/browser-qa.mjs` · `.qa/online-qa.mjs` | `pnpm qa` · `pnpm qa:online` |
+| CI（只做质量门，不部署） | `.github/workflows/ci.yml` | GitHub Actions |
+
+`pnpm check` = `factory:agents` → lint → typecheck → test → build → qa（策略门禁是第一项；test 与 qa **串行**）。
+QA 端口 3210 只有一个来源（`.qa/qa.config.mjs`），`reuseExistingServer` 恒为 `false`。
 
 ## 结构
 
@@ -175,7 +204,16 @@ lib/kits/                     # ← Prototype Kits 安装区（见 docs/kits-int
   kits.lock.json              #   安装清单（来源 commit + 逐文件 checksum）
 tests/                        # 9 个 spec
 docs/kits-integration.md      # 视觉语言来源与集成记录
-.qa/shots.mjs                 # Browser QA 截图与错误检查
-.qa/kits-qa.mjs               # Browser QA（强判据：视口/文档宽度/实际横向滚动 + 降级探针）
+docs/browser-qa.md            # Browser QA 标准（判据、矩阵、REMOTE 模式）
+docs/release-runbook.md       # 发布顺序（RC → Preview → 在线 QA → HVA → 源码发布 → Production）
+docs/vercel-bootstrap.md      # Vercel 授权边界（第 0 节是部署授权契约）
+.qa/qa.config.mjs             # QA 唯一真相：端口 3210 / 路由 / 视口 / 主题 / 容差
+.qa/sweep.mjs                 # 一套判据，LOCAL 与 REMOTE 共用
+.qa/browser-qa.mjs            # `pnpm qa`：LOCAL_MANAGED，自己起 server、自己停
+.qa/online-qa.mjs             # `pnpm qa:online`：REMOTE 观察者（不部署、不建 token）
+.qa/shots.mjs                 # 人工 QA 截图与错误检查
+.qa/kits-qa.mjs               # 人工 QA（强判据：视口/文档宽度/实际横向滚动 + 降级探针）
 .qa/standalone.sh             # Standalone 验证（隐藏 Kits 仓库后跑完整套关卡）
+scripts/                      # 契约与门禁：guard-agent-policy / verify-init / verify-product-contract
+                              #                 / validate-manifest / verify-deployment / check-qa-port
 ```

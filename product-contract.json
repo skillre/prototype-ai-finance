@@ -1,0 +1,21 @@
+{
+  "$schema": "./lib/product-contract.schema.json",
+  "schemaVersion": 1,
+  "invariants": [
+    {
+      "id": "ledger.expense-reconciles",
+      "statement": "支出矩阵 = 已付供应商款 + 未付应付：差额必须恰好为 0，账期那部分支出不可能凭空出现或消失。",
+      "enforcement": "test"
+    },
+    {
+      "id": "ledger.revenue-reconciles",
+      "statement": "收入矩阵 = 已收现金 + 未回款应收：差额必须恰好为 0，任何一处对不上都说明某个图表在自己造数。",
+      "enforcement": "test"
+    },
+    {
+      "id": "ledger.balance-rolls-forward",
+      "statement": "账户期末余额合计 = 期初合计 + 全部经营收付；内部资金调拨左右手互转，净额恒为 0，不计入经营现金流。",
+      "enforcement": "test"
+    }
+  ]
+}

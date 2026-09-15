@@ -5,9 +5,15 @@
 #   bash .qa/standalone.sh
 #
 # 判据（全部必须在 Kits 仓库不可见时通过）：
-#   kits doctor · pnpm typecheck · pnpm test(120) · pnpm build
+#   kits doctor · pnpm factory:manifest · next typegen · tsc · next build · pnpm test
 #
 # 任何异常都必须把目录恢复回去 —— 因此用 trap EXIT 而不是顺序语句。
+#
+# Factory v1.1 端口契约（2026-09-15 治理对齐后）：本脚本**不再自己起 dev server**。
+# 它曾经在 3210 起一个 server 再用 FINANCE_REUSE=1 让 Playwright 接上去 ——
+# `reuseExistingServer` 一旦可被环境变量打开，任何以 2xx/3xx 应答该端口的进程
+# 都会被当成被测应用，整套断言可能在错误的页面上变绿。现在 `pnpm test` 自己
+# 管 server（`reuseExistingServer: false` + `scripts/check-qa-port.mjs` 前置守卫）。
 # =============================================================================
 set -uo pipefail
 
@@ -47,23 +53,17 @@ run() {
 }
 
 run "doctor"     node lib/kits/.kits/kits.mjs doctor
+# Kits 检出不在场时 Manifest 门禁必须报告 [upstream-unavailable] 并**明说没做上游比对**，
+# 而不是失败、也不是假装通过。
+run "manifest"   pnpm factory:manifest
 # 注意：不要用 `bash -lc` —— 登录 shell 会带出 nvm 里的默认 Node（17），
 # 于是 next typegen 会因为「Node >= 20.9 才支持」而失败，那不是本次要测的东西。
 run "typecheck"  env CI=true ./node_modules/.bin/next typegen
 run "typecheck-tsc" ./node_modules/.bin/tsc --noEmit
 run "build"      env CI=true ./node_modules/.bin/next build
 
-# 测试需要一个 dev server；自己在 3210 起，跑完就收。
-echo "════ 启动 dev server (3210)"
-( cd "$FINANCE" && CI=true nohup ./node_modules/.bin/next dev --port 3210 >"$LOG/devserver.log" 2>&1 & echo $! > "$LOG/dev.pid" )
-sleep 12
-if curl -sf -o /dev/null http://localhost:3210/finance; then echo "  ✓ dev server ready"; else echo "  ✗ dev server 未就绪"; fail=1; fi
-echo
-
-run "test" env FINANCE_REUSE=1 CI=true ./node_modules/.bin/playwright test
-
-kill "$(cat "$LOG/dev.pid" 2>/dev/null)" 2>/dev/null || true
-pkill -f "next dev --port 3210" 2>/dev/null || true
+# server 由这一次 test run 自己起、自己停（端口守卫先跑）。不要在这里 pkill。
+run "test"       env CI=true ./node_modules/.bin/playwright test
 
 echo "════════════════════════════════════════════════════════"
 if [ $fail -eq 0 ]; then echo "STANDALONE OK — Kits 仓库不存在时全部通过"; else echo "STANDALONE 失败 —— 见上面的 ✗"; fi

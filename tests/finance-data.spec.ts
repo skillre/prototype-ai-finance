@@ -16,6 +16,7 @@ import {
 } from "../lib/finance-metrics"
 import { EXPENSE_CATEGORIES, CASH_FLOOR, REVENUE_LINES } from "../lib/finance-data"
 import { selectInsights } from "../lib/finance-insights"
+import { invariant } from "./support/product-contract"
 
 /**
  * 账本自洽性（data integrity）。
@@ -25,28 +26,54 @@ import { selectInsights } from "../lib/finance-insights"
  * 页面上的数字就不再是"事实"，而只是"某个图表自己造的数"。
  *
  * 注意：这些是确定性的纯计算，因此这里断言的是**等式**，不是"大概接近"。
+ *
+ * 三条恒等式同时登记在 `product-contract.json`（`ledger.*`）：`invariant()`
+ * 把 id 变成真正的参数，`pnpm factory:contract` 双向核对「声明 ↔ 登记」。
+ * 这里只是把原来那条「四者对得上」的断言按 id 拆开，断言本身一字未改。
  */
 
 test.describe("账本恒等式", () => {
-  test("矩阵、流水、应收、应付四者对得上", () => {
-    const audit = auditLedger()
+  invariant(
+    "ledger.expense-reconciles",
+    "支出矩阵 = 已付供应商款 + 未付应付（差额必须恰好为 0）",
+    () => {
+      test("矩阵支出与未付应付对得上", () => {
+        // 支出矩阵 = 已付供应商款 + 未付应付
+        expect(auditLedger().expensePayableDelta).toBe(0)
+      })
+    }
+  )
 
-    // 支出矩阵 = 已付供应商款 + 未付应付
-    expect(audit.expensePayableDelta).toBe(0)
-    // 收入矩阵 = 已收现金 + 未回款应收
-    expect(audit.revenueReceivableDelta).toBe(0)
-    // 内部调拨左右手互转，净额为 0
-    expect(audit.transferNet).toBe(0)
-  })
+  invariant(
+    "ledger.revenue-reconciles",
+    "收入矩阵 = 已收现金 + 未回款应收（差额必须恰好为 0）",
+    () => {
+      test("矩阵收入与未回款应收对得上", () => {
+        // 收入矩阵 = 已收现金 + 未回款应收
+        expect(auditLedger().revenueReceivableDelta).toBe(0)
+      })
+    }
+  )
 
-  test("账户期末余额 = 期初 + 全部收付", () => {
-    const opening = ACCOUNT_BALANCES.reduce((sum, account) => sum + account.opening, 0)
-    const net = CASH - opening
-    const audit = auditLedger()
-    expect(audit.netCashFlow).toBe(net)
-    expect(audit.closingTotal).toBe(CASH)
-    expect(ACCOUNT_BALANCES.reduce((sum, account) => sum + account.balance, 0)).toBe(CASH)
-  })
+  invariant(
+    "ledger.balance-rolls-forward",
+    "账户期末余额合计 = 期初合计 + 全部经营收付（内部调拨不计入）",
+    () => {
+      test("账户期末余额 = 期初 + 全部收付", () => {
+        const opening = ACCOUNT_BALANCES.reduce((sum, account) => sum + account.opening, 0)
+        const net = CASH - opening
+        const audit = auditLedger()
+        expect(audit.netCashFlow).toBe(net)
+        expect(audit.closingTotal).toBe(CASH)
+        expect(ACCOUNT_BALANCES.reduce((sum, account) => sum + account.balance, 0)).toBe(CASH)
+      })
+
+      test("内部调拨左右手互转，净额为 0", () => {
+        // 调拨不是经营收付，因此不得进入期末余额的推导
+        expect(auditLedger().transferNet).toBe(0)
+      })
+    }
+  )
 
   test("现金头寸落在 842 万，与第一视觉一致", () => {
     expect(CASH).toBe(8_420_000)

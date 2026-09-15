@@ -1,0 +1,50 @@
+{
+  "$schema": "./lib/factory-lock.schema.json",
+  "schemaVersion": 1,
+  "kind": "factory-baseline",
+  "starter": {
+    "packageName": "prototype-starter",
+    "version": "1.2.0",
+    "commit": "61919166bd0a1317e5849065304bdd5453227e6d",
+    "recordedOn": "2026-09-15"
+  },
+  "policy": {
+    "version": "1.3.0"
+  },
+  "managedSurfaces": [
+    "factory-policy.json",
+    "factory.lock.json",
+    "lib/factory-policy.schema.json",
+    "lib/factory-lock.schema.json",
+    "scripts/lib/agent-policy.mjs",
+    "scripts/guard-agent-policy.mjs",
+    ".github/workflows/ci.yml"
+  ],
+  "unresolved": [
+    {
+      "id": "upstream/control-repo",
+      "what": "skillre/prototype-factory-control 是否存在、是否已发布可复用的 reusable-prototype-ci.yml@v1",
+      "why": "CI 想优先调用根控制仓的 reusable workflow，但那需要一个真实存在、且打了 v1 的外部 workflow 引用。引用一个不存在的仓会让 workflow 文件直接无效——CI 不是「跑得慢」，是根本不跑。",
+      "probe": "2026-09-15 在本机核实：`curl -sS -o /dev/null -w '%{http_code}' https://api.github.com/repos/skillre/prototype-factory-control` → 403（GitHub API 在本机不可用，无法据此判定存在与否）；web_fetch https://github.com/skillre/prototype-factory-control → **HTTP 404**；本地 /Users/skillre/ai-prototypes/prototype-factory-control 不存在；全工作区 grep 'prototype-factory-control' 只命中各仓 CI 文件里那段「为什么没有启用」的注释本身。结论：**没有**可解析的上游 workflow 引用。",
+      "checkedOn": "2026-09-15",
+      "value": null
+    },
+    {
+      "id": "upstream/control-repo-commit",
+      "what": "根控制仓的 commit SHA / v1 tag 指向的确切内容",
+      "why": "锁定一份不可复现的外部引用比不引用更糟：它看起来像被钉住了，实际谁也没核过。",
+      "probe": "未执行——没有可解析的 ref：见 upstream/control-repo（仓不存在）。宁缺勿猜。",
+      "checkedOn": "2026-09-15",
+      "value": null
+    },
+    {
+      "id": "upstream/product-remote",
+      "what": "本仓 origin（github.com/skillre/prototype-ai-finance）是否已发布，CI 是否真的有运行场所",
+      "why": "`.github/workflows/ci.yml` 只有在仓被推到一个真实远端之后才会运行。把「CI 会跑」当既成事实，会在第一次 push 时才发现它从来没有运行过。",
+      "probe": "web_fetch https://github.com/skillre/prototype-ai-finance → **HTTP 404**（本仓 `git remote -v` 指向该地址）。观察于 2026-09-15；本仓此刻在 feature branch 上、未执行 push，因此没有做进一步核实。",
+      "checkedOn": "2026-09-15",
+      "value": null
+    }
+  ],
+  "note": "product stage 的治理锁（init-contract.json 的 stage = \"product\"，不是 baseline）。这份锁记的是**两个轴**，各自可核、互不替代：\n\n【轴一 · factoryVersion = 1.2.0】Factory Core（机器工具链：契约 schema、四个 verifier、agent-policy、LOCAL/REMOTE Browser QA、CI）来自 prototype-starter 的 **v1.2.0**，其 package.json 的 version 字段就是 1.2.0。`starter` 这一组按 `lib/factory-lock.schema.json` 的语义记「升级开始时基线 HEAD」：**61919166bd0a1317e5849065304bdd5453227e6d**「chore(factory): adopt governance policy v1.3」（starter 分支 feature/factory-governance-v1.3，2026-09-15 23:10:34 +0800）。policy 1.3.0 的管理面在这个 commit 里**已经落盘**。本仓受管面里由 Factory Core 直接提供的那五个 —— `factory-policy.json`・`lib/factory-policy.schema.json`・`lib/factory-lock.schema.json`・`scripts/lib/agent-policy.mjs`・`scripts/guard-agent-policy.mjs` —— 与它**逐字节相同**（复制后 `diff` 为空，2026-09-16 复核）；另外两个受管面必然是「本仓版本」而不是「上游字节」：`factory.lock.json` 就是这份锁本身，`.github/workflows/ci.yml` 是按同一契约写成的本仓 workflow（比上游多 `factory:manifest` 与 `factory:deploy actions` 两门 —— 本仓确实有 `visual-manifest.json`，所以那一门必须接上）。所以这一条是可核的，不进 unresolved。\n\n【轴二 · policy = 1.3.0】`policy.version` 与 `factory-policy.json` 的 `policyVersion` 必须一致，`pnpm factory:agents` 逐字校验管理块、schema 关键值与 CI 契约。\n\n【另一条事实 · 派生基线】本仓**不是**从 v1.2.0 fork 的，而是从 **prototype-starter v1.0.0** 派生：本仓第一个提交 7a454133ce2babc37252d8ca914deae6162c4d44「chore: bootstrap from prototype-starter v1.0.0」写明「imported verbatim from the verified v1.0.0 tag」。那个标签是 **annotated tag**：tag 对象 98ae3cb211c18284a91a242f7f62b7671306cf28，指向 commit **0185a389ee345be30f6a463808a5da4349215039**（`git for-each-ref refs/tags/v1.0.0` 输出，2026-09-15 核实）。注意该标签内 package.json 的 version 字段当时是 0.1.0 —— 标签名与字段值在 v1.0.0 这一刻并不相等，两个都写下来比含糊地写一个更诚实。派生事实（v1.0.0）与升级事实（v1.2.0 + policy 1.3.0）是两件事，都成立。\n\n【Kits 安装状态】读自 `lib/kits/kits.lock.json`（不是猜的）：source.kind = source-installation，repo = prototype-kits，commit = 9988c958dd505459912120f2ffcd7cedd8895dae，dirty = false；registryVersion 0.1.1；8 个已安装 asset（ambient-glow · animated-grid · cinematic · cli · contracts · data-cursor · insight-reveal · react-utils）全部 status = approved；`lib/kits/adapters/` 由本产品拥有（Kits 永不覆盖）。之所以写在 note 里而不是结构化字段：`lib/factory-lock.schema.json` 是 Factory Core 的受管面（additionalProperties: false），本仓不改它——加字段会让这份 schema 与上游分叉。\n\n【一处必须说清楚的边界】同机的 prototype-kits 工作副本在 2026-09-15 已前进到 registryVersion **0.2.0**。`pnpm factory:manifest` 的 L2/L3 比对用的是**那个检出**的 registry，因此它证明的是「本 Manifest 引用的 id 在 registry 里存在且 approved」，**不是**「上游内容与已安装内容逐字节一致」；后者唯一的凭据是 kits.lock.json 里的逐文件 checksum。\n\n`AGENTS.md` 里只有 `factory-core-policy` 管理块受管，块外是人类写的文档（本产品的领域规则、Browser QA、Kits 归属、Git 流程）。"
+}

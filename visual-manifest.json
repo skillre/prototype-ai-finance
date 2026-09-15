@@ -1,0 +1,31 @@
+{
+  "productType": "ai-finance-console",
+  "firstVisual": "第一屏是现金跑道仪表：左侧 ¥842 万现金头寸的大数字，右侧同一条地平线上的 90 天推演曲线，底部压着运营备付金警戒线。",
+  "stylePack": "cinematic",
+  "signatureComponents": ["animated-grid", "data-cursor", "insight-reveal"],
+  "signatureComponentBudget": 3,
+  "deviations": [
+    {
+      "axis": "typography",
+      "from": "cinematic 的 display 刻度（1.08 行高）套用到全部标题层级",
+      "to": "只有 display 交给 pack；title/subtitle/heading 保持 1.3/1.4/1.45",
+      "reason": "40px 的中文在 1.08 行高下会切字。中文需要比拉丁方案更高的行高，所以 pack 只负责纯数字与大标题那一层。"
+    },
+    {
+      "axis": "color",
+      "from": "cinematic 的深色画布（pack 默认场景）",
+      "to": "浅色与深色双主题，默认跟随系统（ThemeProvider defaultTheme=system）",
+      "reason": "财务工作台要在日光办公环境下长时间读数：深色是画布基调，不是唯一可用状态，两套主题共用同一份 pack 令牌。"
+    }
+  ],
+  "effects": ["ambient-glow"],
+  "motionDirection": "atmospheric",
+  "density": "medium",
+  "avoid": [
+    "ai-purple",
+    "card-everywhere",
+    "card-borders-for-hierarchy",
+    "chat-window",
+    "symmetric-50-50-grid"
+  ]
+}
