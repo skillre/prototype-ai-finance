@@ -70,8 +70,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 10. **必须考虑 responsive**：桌面（Sidebar + TopNav）与移动（MobileNav + Drawer + 重排后的单列）都要可用。
 11. **必须实现 loading / empty / error 三态**，用全局组件表达。
 12–15. 完工前依次执行并全部通过：`pnpm factory:agents` → `pnpm factory:init` → `pnpm factory:contract` →
-`pnpm factory:manifest` → `pnpm lint` → `pnpm typecheck` → `pnpm test` → `pnpm build` → `pnpm qa`
-（`pnpm check` 把前五项合成一条命令；test 与 qa 串行，永不并发）。
+`pnpm factory:manifest` → `pnpm qa:doctor` → `pnpm lint` → `pnpm typecheck` → `pnpm test` → `pnpm build` → `pnpm qa`
+（`pnpm check` 把这一串合成一条命令；test 与 qa 串行，永不并发）。
 16. **不覆盖用户已有修改**。开工前确认工作区状态。
 17. **不要假设代码结构**；修改尽量局部、可控、可回滚。
 
@@ -222,9 +222,15 @@ Factory 不 vendor 任何 Kits 内容，只集成**调用机制**。本仓的安
 
 - **禁止手工修改 `installed/`。** 需要升级 = 重跑 `kits add`，不是手工 patch asset。
 - **产品代码不得直接 import `installed/*`。** 必须走 `Product → adapters → installed`（`@/lib/kits/adapters/*`）。
+- **`pnpm qa:doctor` 是正式质量门。** doctor 不通过 = 安装状态不可信 = **禁止声称完成**；
+  它只**调用** `kits doctor`，不重写那套规则（两份实现永远是弱的那份在报绿）。
+  Kits 检出不在场时它报告 `[upstream-unavailable]` 并**明说没做上游比对** —— 独立交付是正常状态，
+  但"没检查"绝不能被说成"通过"。
+- **不要用 `factory:kits --write` 升级安装**，除非用户明确要求：那个动作会整体重写 `installed/`。
+  默认 dry-run 只打印计划。
 - 本产品用 **Source Installation**：没有 `@kits/*` 依赖、没有 `link:`、不需要 `transpilePackages` /
   `externalDir` / `turbopack.root`。把 `prototype-kits` 仓库移走，typecheck / test / build 仍然通过。
-- 完整记录见 `docs/kits-integration.md`。
+- 完整记录见 `docs/kits-integration.md`；归属契约见 `docs/kits-ownership.md`。
 
 ## 部署授权与发布（Vercel）
 
@@ -313,7 +319,8 @@ style-presence 通道、DOM == AX 配套扫描全部复用，只有 origin 不�
 - **No Invisible Semantics**：对 `button` / `link` / `heading`，DOM 贡献语义的元素数必须等于无障碍树里该 role 的节点数；
   配套的「`aria-hidden` 宿主内不得有可交互内容」扫描**必须同时存在**（剪枝会从两侧一起移除节点，只查 DOM==AX 会静默通过）。
 - **Probe Integrity**：`0 / 0 = NaN`，而 `Math.abs(NaN - x) > tolerance` 是 `false` —— 断言会静默通过。
-  所以所有数值探针都经 `.qa/probe-guard.mjs` 的 `measure()`；selector 未命中 / 非有限值 → **fail loudly**。
+  所以所有数值探针都经 `.qa/probe-guard.mjs` 的 `measure()`，它第一步就是 `Number.isFinite(value)`
+  （`expectRatio()` 会再查一次偏差是否为有限值）；selector 未命中 / 非有限值 → **fail loudly**。
   「没量到」永远不等于「满足条件」。
 - **Style Presence**：App Router 按模块图打包 CSS，某条路由没 import 那份样式表就永远到不了浏览器 ——
   不报错、不警告、DOM 完整、按 testid 的断言全部通过。sweep 因此把每条路由与**同一个浏览器**里渲染的
@@ -364,13 +371,16 @@ pnpm factory:agents    # 策略门禁：编排边界 / 管理块 ↔ factory-pol
 pnpm factory:init      # 初始化边界：stage=product 的身份残留扫描
 pnpm factory:contract  # 产品语义不变量：声明 ↔ 测试登记，双向核对
 pnpm factory:manifest  # Visual Manifest：L1 结构 + L2 自洽 + L3 与 pack 比对
+pnpm qa:doctor         # Kits doctor：托管文件 / lock / 依赖 / 适配层 / 边界扫描
+pnpm factory:kits      # Kits 安装（默认 dry-run，只打印计划；--write 会整体重写 installed/）
 pnpm factory:deploy    # 部署授权与身份（actions / preflight / verify / access）
 pnpm qa:online         # 在线 QA（REMOTE 观察者；需要用户提供 URL 与凭据）
 ```
 
 任何一项失败：**禁止声称完成**。`pnpm check` 会依次跑
-`factory:agents` → lint → typecheck → test → build → qa，**策略门禁是第一项**；
-`pnpm test` 与 `pnpm qa` **串行**，永不并发。
+`factory:agents` → `factory:init` → `factory:contract` → `factory:manifest` → `qa:doctor`
+→ lint → typecheck → test → build → qa，**策略门禁是第一项，Kits doctor 在 lint 之前**
+（安装状态不可信时，后面那些绿没有意义）；`pnpm test` 与 `pnpm qa` **串行**，永不并发。
 
 ## Git 工作流与安全
 
@@ -399,12 +409,15 @@ pnpm typecheck
 pnpm test              # Playwright E2E：端口守卫 + 自管 dev server（3210）
 pnpm build
 pnpm qa                # Browser QA 全量扫描（LOCAL：自己起 server、自己停）
-pnpm check             # factory:agents → lint → typecheck → test → build → qa
+pnpm check             # factory:agents → factory:init → factory:contract → factory:manifest
+                       #   → qa:doctor → lint → typecheck → test → build → qa
 
 pnpm factory:agents    # Agent 策略门禁（--print-block 同步 AGENTS.md 管理块）
 pnpm factory:init      # 初始化边界：product stage 的身份残留
 pnpm factory:contract  # 产品语义不变量：声明 ↔ 测试登记
 pnpm factory:manifest  # Visual Manifest（L1 结构 / L2 自洽 / L3 与 pack 比对）
+pnpm qa:doctor         # Kits doctor（正式质量门：托管文件 / lock / 依赖 / 适配层 / 边界）
+pnpm factory:kits      # Kits 安装：默认 dry-run，只打印计划（--write 才会写盘）
 pnpm factory:deploy    # 部署授权与身份（actions / preflight / verify / access）
 pnpm qa:online         # 在线 QA（REMOTE 观察者：只扫已存在的 URL，不部署、不建 token）
 

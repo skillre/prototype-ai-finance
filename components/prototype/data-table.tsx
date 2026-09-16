@@ -1,6 +1,6 @@
 "use client"
 
-import { LedgerCursor } from "@/lib/kits/adapters/scene"
+import { LedgerCursor, cursorTarget } from "@/lib/kits/adapters/scene"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
@@ -99,10 +99,9 @@ export function DataTable<T>({
                     <tr
                       key={key}
                       onClick={onRowClick ? () => onRowClick(row) : undefined}
-                      /* 指针读数契约：Kits DataCursor 解析这两个属性
+                      /* 指针读数契约：属性名属于 Kits 资产，由适配层给出
                          （inspection 默认开启；触屏与 reduced-motion 下不激活）。 */
-                      data-cursor={rowCursor ? "inspect" : undefined}
-                      data-cursor-label={rowCursor ? rowCursor(row) : undefined}
+                      {...cursorTarget(rowCursor ? "inspect" : undefined, rowCursor?.(row))}
                       className={cn(
                         "group/row relative border-b border-hairline transition-colors duration-hover ease-standard last:border-0",
                         interactive &&

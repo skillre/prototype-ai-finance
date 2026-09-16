@@ -118,6 +118,37 @@ export function LedgerCursor({ children }: { children: ReactNode }) {
   return <DataCursor mode="ring">{children}</DataCursor>
 }
 
+/**
+ * 指针读数目标的 props —— Kits 的 `DataCursor` 用 `closest("[data-cursor]")`
+ * 找目标，并把 `data-cursor-label` 当作该目标的读数标签。
+ *
+ * ## 为什么这两个属性名住在这里，而不是住在调用点
+ *
+ * 它们是**某一个 Kits 资产的 DOM 契约**，不是 Finance 自己的词汇。
+ * `components/**` 里只要出现 Kits 资产 id，Factory Core 的契约测试
+ * （`tests/factory-contract.spec.ts` → "Factory Core source names no specific
+ * Kits asset"）就判违规 —— 而且判得有道理：Core 一旦抄下某个光标实现的
+ * 名字，换实现时它会**静默失效**：不报错，只是不再有读数。
+ *
+ * 所以 Core 只说产品语义（`cursorTarget(...)`），资产名留在这层适配里。
+ * 用法：
+ *
+ * ```tsx
+ * <tr {...cursorTarget("inspect", "P99 · 184ms")}>
+ * ```
+ *
+ * 不传 `kind` 表示这一行不是读数目标（返回 `undefined`，属性整体不渲染）。
+ */
+export interface CursorTargetProps {
+  "data-cursor"?: string
+  "data-cursor-label"?: string
+}
+
+export function cursorTarget(kind?: string, label?: string): CursorTargetProps | undefined {
+  if (!kind) return undefined
+  return { "data-cursor": kind, "data-cursor-label": label }
+}
+
 /* -------------------------------------------------------------------------- */
 /* 3. 结论序列 —— InsightReveal                                                */
 /* -------------------------------------------------------------------------- */

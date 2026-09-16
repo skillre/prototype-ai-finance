@@ -9,13 +9,15 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "node scripts/check-qa-port.mjs && playwright test",
-    "check": "pnpm factory:agents && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm qa",
+    "check": "pnpm factory:agents && pnpm factory:init && pnpm factory:contract && pnpm factory:manifest && pnpm qa:doctor && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm qa",
     "qa": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON .qa/browser-qa.mjs",
+    "qa:doctor": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/doctor-gate.mjs",
     "qa:online": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON .qa/online-qa.mjs",
     "factory:agents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/guard-agent-policy.mjs",
     "factory:manifest": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/validate-manifest.mjs",
     "factory:contract": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-product-contract.mjs",
     "factory:init": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-init.mjs",
+    "factory:kits": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/install-kits.mjs",
     "factory:deploy": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-deployment.mjs"
   },
   "dependencies": {

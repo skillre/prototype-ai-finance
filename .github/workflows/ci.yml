@@ -23,22 +23,36 @@
 #     # uses: skillre/prototype-factory-control/.github/workflows/reusable-prototype-ci.yml@v1
 #
 # That call is **not** enabled here, and the reason is recorded, not guessed:
-# `factory.lock.json` keeps an `upstream/control-repo` entry whose `value` is
-# `null` — verified 2026-09-15 (the API probe on this machine returns 403, the web
-# URL returns 404, the path does not exist locally, and a whole-workspace grep only
-# ever matches the comment you are reading). A `uses:` pointing at a repository
-# that does not exist makes the workflow file invalid, so *every* run fails before
-# any job starts — CI would be dead, not merely degraded. A gate that never runs is
-# worse than a local one that does, and hard-coding an unverifiable `@v1` would look
-# pinned while nobody had ever resolved it.
+# `factory.lock.json` records it in `notes[]` (`upstream/control-repo`, value
+# null). This is a **product** lock, and the product branch of
+# `contracts/factory-lock.schema.json` has no `unresolved[]` — the same entries
+# live as prose notes, with their probes intact, so "we did not pin it" is still
+# a written-down fact rather than an omission.
+# Re-verified on 2026-09-16 with **authenticated** credentials, and the answer
+# changed from the earlier anonymous probe:
 #
-# `pnpm factory:agents` enforces the pairing: the moment a real `uses:` line is
-# added, the lock must stop calling it unknown. So the switch is a two-line change
-# plus a lock update — deliberate, and impossible to do by accident.
+#   - `skillre/prototype-factory-control` **exists** and is private; its remote
+#     `main` (83916bf) already carries `.github/workflows/reusable-prototype-ci.yml`;
+#   - it has **no tags at all**, so `@v1` does not resolve — and `@main` is a moving
+#     branch, whose content is still being edited locally.
 #
-# (This repository's own remote is unpublished too — `upstream/product-remote` in
-# the same lock, 404 on 2026-09-15 — so this workflow has no runtime yet. It is
-# written now so the contract is reviewable, not because it is already running.)
+# So there is nothing *pinnable*: a `uses:` here would either reference a ref that
+# does not exist (the workflow file becomes invalid, and every run fails before any
+# job starts — CI dead, not degraded) or silently track a branch that changes under
+# it. Both look pinned and are not. The switch stays a deliberate act: publish a tag
+# (or hand over a reviewed SHA), then change two lines and update the lock.
+#
+# (The earlier note here said the repo "does not exist" because an anonymous HTTP
+# probe returned 404. That inference was wrong — a private repository answers 404 to
+# anonymous requests. The lesson is written down in the lock's note.)
+#
+# This repository's own remote **does** exist and is private (`gh repo view
+# skillre/prototype-ai-finance` → visibility PRIVATE, default branch main;
+# `git ls-remote origin` lists `main` = 852b996, three feature branches and the
+# annotated tag v1.0.0), so this workflow has a real runtime. But the branch
+# carrying *this* file (`feature/factory-governance-v1.3`) is **not** on the
+# remote, so nothing here has run in Actions yet: "has somewhere to run" and
+# "has run" are two different facts, and only the first one is established.
 #
 # SERIALIZATION (non-negotiable)
 # ------------------------------
@@ -109,6 +123,15 @@ jobs:
       # **no upstream comparison** — it never implies agreement it did not verify.
       - name: Visual manifest
         run: pnpm factory:manifest
+
+      # Kits doctor is a **formal quality gate**, not advice: if the install state
+      # cannot be trusted, nothing downstream may be called green. On a runner the
+      # Kits checkout is absent (the normal state of an independently delivered
+      # product), so this still verifies the managed files against `kits.lock.json`
+      # and reports `[upstream-unavailable]` for the part it did **not** compare —
+      # it never turns "did not check" into "checked".
+      - name: Kits doctor
+        run: pnpm qa:doctor
 
       # Prints the deploy authorization matrix and asserts the contract is intact.
       # It authorizes nothing and touches no deployment: every act that would change

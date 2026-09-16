@@ -55,6 +55,56 @@ export const UPSTREAM_REUSABLE_WORKFLOW = `${UPSTREAM_CONTROL_REPO}/.github/work
 export const UPSTREAM_LOCK_ID = "upstream/control-repo"
 
 /**
+ * The two lock shapes that exist in this workspace, and who gets which.
+ *
+ * `factory.lock.json` means two different things depending on the tree it sits
+ * in, and both are real (see the root control plane's
+ * `contracts/factory-lock.schema.json`, which describes them with `oneOf`):
+ *
+ *   governance-baseline  the Factory baseline's own lock: `kind:
+ *                        "factory-baseline"`, baseline identity, managed policy
+ *                        version, the managed-surface list, and an
+ *                        `unresolved[]` section that makes "don't guess the
+ *                        unknown" mechanical.
+ *   product              a derived product's lock: `factoryVersion`, where the
+ *                        baseline came from, the initialization stage, the Kits
+ *                        state, the deployment identity and prose notes.
+ *
+ * A gate that only knew the first shape would reject the second one outright —
+ * which is the "a check that cannot run is not a check that passed" failure this
+ * module keeps removing. Both are supported, and which one applies is
+ * *detected*, never assumed from the repository's name.
+ */
+export const LOCK_SHAPE_BASELINE = "governance-baseline"
+export const LOCK_SHAPE_PRODUCT = "product"
+
+/**
+ * Which shape a parsed lock is.
+ *
+ * @param {unknown} lock
+ * @returns {"governance-baseline"|"product"|null} `null` = neither shape.
+ */
+export function detectLockShape(lock) {
+  if (!isPlainObject(lock)) return null
+  if (lock.kind === "factory-baseline") return LOCK_SHAPE_BASELINE
+  if (typeof lock.factoryVersion === "string") return LOCK_SHAPE_PRODUCT
+  return null
+}
+
+/**
+ * String a **product** lock must mention in its `notes` while the upstream
+ * reusable workflow is not actually being called.
+ *
+ * The baseline lock records that unknown in `unresolved[]`, where it can be
+ * checked precisely (`value` must be `null`, `probe` must say how it was
+ * checked). The product shape has no such section — so the same rule ("an
+ * inactive upstream call must still be written down as unknown") is carried by
+ * the notes text. Dropping it for products would make one of the two shapes
+ * strictly weaker, and the weaker shape is always the one that reports green.
+ */
+export const UPSTREAM_NOTE_MARKER = "prototype-factory-control"
+
+/**
  * Raised when a scan had nothing to look at. Mirrors `InitScopeError` /
  * `SeamScopeError`: an empty scan is not a clean scan, it is a check that did
  * not run, and it must never be reported as a pass.

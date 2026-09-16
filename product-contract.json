@@ -3,6 +3,11 @@
   "schemaVersion": 1,
   "invariants": [
     {
+      "id": "contract.declaration-matches-enforcement",
+      "statement": "任何声明在 product-contract.json 里的不变量都必须有测试登记；任何测试登记的不变量都必须被声明——两个方向都不允许静默缺席。",
+      "enforcement": "test"
+    },
+    {
       "id": "ledger.expense-reconciles",
       "statement": "支出矩阵 = 已付供应商款 + 未付应付：差额必须恰好为 0，账期那部分支出不可能凭空出现或消失。",
       "enforcement": "test"

@@ -41,6 +41,7 @@
  */
 
 import { execFileSync } from "node:child_process"
+import { createHash } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { isAbsolute, join } from "node:path"
 
@@ -50,14 +51,18 @@ import {
   KEY_VALUE_PATHS,
   LOCK_FILENAME,
   LOCK_SCHEMA_PATH,
+  LOCK_SHAPE_BASELINE,
+  LOCK_SHAPE_PRODUCT,
   POLICY_FILENAME,
   POLICY_SCHEMA_PATH,
   PolicyScopeError,
   UPSTREAM_LOCK_ID,
+  UPSTREAM_NOTE_MARKER,
   UPSTREAM_REUSABLE_WORKFLOW,
   assertNonVacuousPolicyScan,
   blockAnchors,
   compareManagedBlock,
+  detectLockShape,
   inspectCiWorkflow,
   inspectPackageWiring,
   formatPolicyReport,
@@ -326,9 +331,45 @@ if (blockMatch?.ok) {
 /* 8 — the lock                                                                */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * One file, two shapes — and which one applies is **detected, never assumed**.
+ *
+ * `prototype-starter` (the baseline) writes a **governance-baseline** lock: it is
+ * the thing that *is* the Factory, so its lock records its own identity, the
+ * policy version governing it, the surfaces that policy manages, and an
+ * `unresolved[]` list that makes "do not guess the unknown" mechanical.
+ *
+ * A derived product writes a **product** lock: which factory version it tracks,
+ * where the baseline came from, which initialization stage it is in, what Kits it
+ * has installed, and where it deploys. It has no managed-surface list and no
+ * `unresolved[]` — those belong to a baseline's governance lock.
+ *
+ * Both are validated here, because a gate that only knew one shape would reject
+ * the other one — and then someone would delete the check instead of fixing it.
+ * The rule that holds in *both* shapes is the same: **a tree may not claim a
+ * state it is not in.** For the baseline that is `stage: "baseline"` against its
+ * package identity; for a product it is `stage` against `init-contract.json`.
+ * A product lock that says `product` while the boundary contract still says
+ * `baseline` is a half-initialized tree, and it fails here instead of being
+ * discovered by the next reader.
+ */
+
 let starterVersion = String(policy.policyVersion)
 let managedSurfaces = 0
+let lockShape = null
+let stageStatus = "not-checked"
 if (lock) {
+  lockShape = detectLockShape(lock)
+  if (lockShape === null) {
+    fail(
+      "lock/shape-unknown",
+      `${LOCK_FILENAME} 既不是治理锁（没有 kind: "factory-baseline"），也不是产品锁（没有 factoryVersion）——` +
+        "两种形状都不是，就没有任何一种校验能作用在它上面。两种形状的定义见根控制面 contracts/factory-lock.schema.json。",
+    )
+  }
+}
+
+if (lock && lockShape === LOCK_SHAPE_BASELINE) {
   starterVersion = String(lock.starter?.version ?? "?")
   managedSurfaces = (lock.managedSurfaces ?? []).length
 
@@ -404,6 +445,116 @@ if (lock) {
 }
 
 /* -------------------------------------------------------------------------- */
+/* 8b — the product lock                                                       */
+/* -------------------------------------------------------------------------- */
+
+if (lock && lockShape === LOCK_SHAPE_PRODUCT) {
+  starterVersion = String(lock.factoryVersion ?? "?")
+  managedSurfaces = 0
+
+  // 8b.1 — stage must agree with the initialization boundary.
+  //
+  // This is the check the shape needs and the schema cannot make: `stage` is a
+  // word in two files, and "the lock says product while the boundary contract
+  // still says baseline" is precisely the half-initialized state the boundary
+  // exists to prevent. A schema cannot compare two files; a gate can.
+  const initPath = join(projectRoot, "init-contract.json")
+  if (!existsSync(initPath)) {
+    fail(
+      "lock/stage-unverifiable",
+      "产品锁的 stage 必须与 init-contract.json 对账，但找不到 init-contract.json ——「没核对」不是「核对通过」。",
+    )
+  } else {
+    const initRead = readJsonFile(initPath)
+    if (!initRead.ok) {
+      fail("lock/init-unreadable", `无法解析 init-contract.json：${initRead.error.message}`)
+    } else if (lock.stage !== initRead.value.stage) {
+      fail(
+        "lock/stage-mismatch",
+        `${LOCK_FILENAME} 的 stage = ${JSON.stringify(lock.stage)}，init-contract.json 是 ${JSON.stringify(initRead.value.stage)}。` +
+          "两处必须说同一件事——不一致就是半初始化状态。",
+      )
+    } else {
+      stageStatus = `✓ stage=${lock.stage} 与 init-contract.json 一致`
+    }
+
+    if (typeof lock.initContractSha256 === "string") {
+      const actual = createHash("sha256").update(readFileSync(initPath)).digest("hex")
+      if (actual !== lock.initContractSha256) {
+        fail(
+          "lock/init-contract-stale",
+          `${LOCK_FILENAME} 记的 initContractSha256 与磁盘上的 init-contract.json 不一致` +
+            `（锁记 ${lock.initContractSha256.slice(0, 12)}…，实际 ${actual.slice(0, 12)}…）——锁钉住的是另一版初始化契约。改了契约就要同时更新锁。`,
+        )
+      }
+    } else {
+      warn("lock/init-contract-unpinned", `${LOCK_FILENAME} 没有记 initContractSha256，钉不住它对应哪一版初始化契约。`)
+    }
+  }
+
+  // 8b.2 — the Kits facts must be READ from the Kits lock, not retyped into this
+  // one. A hand-copied version number is a fact with no owner, and it is exactly
+  // the kind of value that silently stops matching the thing it describes.
+  if (lock.kits && typeof lock.kits === "object") {
+    const kitsPath = join(projectRoot, String(lock.kits.lockPath ?? ""))
+    if (!existsSync(kitsPath)) {
+      fail("lock/kits-missing", `${LOCK_FILENAME} 把 ${lock.kits.lockPath} 记为 Kits 锁，但它不存在——列一个读不到的路径等于没有记。`)
+    } else {
+      const kitsRead = readJsonFile(kitsPath)
+      if (!kitsRead.ok) {
+        fail("lock/kits-unreadable", `无法解析 ${lock.kits.lockPath}：${kitsRead.error.message}`)
+      } else {
+        const actualRegistry = kitsRead.value.registryVersion ?? null
+        const actualCommit = kitsRead.value.source?.commit ?? null
+        if (actualRegistry !== lock.kits.registryVersion) {
+          fail(
+            "lock/kits-registry-drift",
+            `${lock.kits.lockPath} 的 registryVersion 是 ${JSON.stringify(actualRegistry)}，锁里写的是 ${JSON.stringify(lock.kits.registryVersion)}`,
+          )
+        }
+        if (actualCommit !== lock.kits.sourceCommit) {
+          fail(
+            "lock/kits-commit-drift",
+            `${lock.kits.lockPath} 的 source.commit 是 ${JSON.stringify(actualCommit)}，锁里写的是 ${JSON.stringify(lock.kits.sourceCommit)}`,
+          )
+        }
+      }
+    }
+  } else {
+    warn(
+      "lock/kits-unpinned",
+      `${LOCK_FILENAME} 没有记 Kits 安装状态。装了 Kits 的产品锁应当记，且值必须读自 lib/kits/kits.lock.json。`,
+    )
+  }
+
+  // 8b.3 — the upstream unknown must still be written down. See
+  // UPSTREAM_NOTE_MARKER: the product shape carries this in prose because it has
+  // no `unresolved[]`, and dropping the rule for one shape would make that shape
+  // the weaker one.
+  const activeReuse = ciInspection.upstreamReuse
+  const recordedUnknown = (lock.notes ?? []).join("\n").includes(UPSTREAM_NOTE_MARKER)
+  if (activeReuse.length > 0 && !recordedUnknown) {
+    warn(
+      "lock/upstream-notes",
+      `${CI_WORKFLOW_PATH} 已经在调用 ${UPSTREAM_REUSABLE_WORKFLOW}，notes 里却没有提到上游——记录该更新了。`,
+    )
+  }
+  if (activeReuse.length === 0 && !recordedUnknown) {
+    fail(
+      "lock/upstream-unrecorded",
+      `${CI_WORKFLOW_PATH} 没有调用上游 reusable workflow，产品锁的 notes 必须写明上游（${UPSTREAM_NOTE_MARKER}）仍未核实——` +
+        "未知不猜，但也不能不写下来。",
+    )
+  }
+
+  // 8b.4 — a derivation from a dirty baseline is not reproducible, and saying so
+  // costs one warning now instead of one afternoon later.
+  if (lock.baseline?.dirty === true) {
+    warn("lock/baseline-dirty", `${LOCK_FILENAME} 记 baseline.dirty = true：这次派生不可复现，别把它当成可重建的起点。`)
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /* 9 — package.json must run this gate, first                                  */
 /* -------------------------------------------------------------------------- */
 
@@ -449,6 +600,8 @@ const report = {
   status: ok ? "ok" : "invalid",
   policyVersion: policy.policyVersion,
   starterVersion,
+  lockShape,
+  stageStatus,
   route,
   managedSurfaces,
   schemaChecks: policyValidation.checks + lockValidation.checks,
@@ -466,6 +619,7 @@ const report = {
 
 report.lines = [
   formatPolicyReport(report),
+  `  锁：${LOCK_FILENAME} · 形状 ${lockShape ?? "?"} · stage ${stageStatus}`,
   ...(report.ignoredSchemaKeywords.length > 0
     ? [`  ⚠ schema 里有未实现的关键字（已计入检查队列，不会被当作满足）：${report.ignoredSchemaKeywords.join(", ")}`]
     : []),

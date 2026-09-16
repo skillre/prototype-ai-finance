@@ -126,7 +126,7 @@ pack 的拉丁字体之后。
 ## 测试
 
 ```bash
-pnpm test    # 227 个 Playwright 断言，13 个 spec
+pnpm test    # 301 个 Playwright 断言，16 个 spec
 ```
 
 产品自己的 9 个 spec：
@@ -143,7 +143,7 @@ pnpm test    # 227 个 Playwright 断言，13 个 spec
 | `finance-responsive.spec.ts` | 1440×900 / 390×844、命中区、重排 |
 | `localization.spec.ts` | 全部路由与浮层的零英文泄漏审查 |
 
-继承自 Factory Core 的 4 个契约 spec（**它们守的是工具链本身，不是这个产品的页面**）：
+继承自 Factory Core 的 7 个契约 spec（**它们守的是工具链本身，不是这个产品的页面**）：
 
 | spec | 覆盖 |
 | --- | --- |
@@ -151,6 +151,9 @@ pnpm test    # 227 个 Playwright 断言，13 个 spec
 | `online-qa.spec.ts` | REMOTE 观察者：身份先于 QA、不创建 token、LOCAL 与 REMOTE 共用同一套判据 |
 | `deploy-contract.spec.ts` | 部署身份 / 授权矩阵 / 受保护与 public 的区别 / `vercel curl` 的副作用披露 |
 | `release-contract.spec.ts` | 发布状态机、RC ↔ Production 的 SHA 一致、tag 规矩、文档与实现说的是同一件事 |
+| `factory-contract.spec.ts` | Core 中立性（产品源码不得出现 Kits 资产 id）、共享组件不得耦合产品数据、QA 端口契约、Manifest 校验器本身 |
+| `product-contract.spec.ts` | 契约的声明方向：形状拒绝、声明 ↔ 登记双向核对、门禁 CLI 的真实退出码 |
+| `kits-seam.spec.ts` | Kits 接缝：托管区/适配层的边界、说明符扫描、空扫描必须失败（baseline 专属两条显式 skip） |
 
 > 门禁与它自己的测试都要走 `pnpm test`：**一个自身失效方式是"静默通过"的门，不能靠读代码来确认它是好的。**
 
@@ -171,15 +174,18 @@ pnpm test    # 227 个 Playwright 断言，13 个 spec
 | 面 | 文件 | 门禁 |
 | --- | --- | --- |
 | 策略与并发 | `factory-policy.json` · `AGENTS.md` 的 `factory-core-policy` 管理块 | `pnpm factory:agents` |
-| 基线锁（两个轴：factory 1.2.0 / policy 1.3.0） | `factory.lock.json` | 同上 |
+| 工厂锁（product 形状；factory 1.2.0 / policy 1.3.0，未知项与依据记在 `notes[]`） | `factory.lock.json` | 同上 |
 | 初始化边界 | `init-contract.json` | `pnpm factory:init` |
 | 产品语义不变量（三条账本恒等式） | `product-contract.json` | `pnpm factory:contract` |
 | 视觉方向 | `visual-manifest.json` | `pnpm factory:manifest` |
 | 部署授权与身份 | `scripts/lib/deploy-contract.mjs` · `scripts/lib/release-contract.mjs` | `pnpm factory:deploy` |
 | Browser QA（LOCAL + REMOTE 共用一套判据） | `.qa/sweep.mjs` · `.qa/browser-qa.mjs` · `.qa/online-qa.mjs` | `pnpm qa` · `pnpm qa:online` |
+| Kits 安装状态（Source Installation） | `lib/kits/kits.lock.json` · `scripts/doctor-gate.mjs` · `scripts/install-kits.mjs` | `pnpm qa:doctor` · `pnpm factory:kits`（默认 dry-run） |
 | CI（只做质量门，不部署） | `.github/workflows/ci.yml` | GitHub Actions |
 
-`pnpm check` = `factory:agents` → lint → typecheck → test → build → qa（策略门禁是第一项；test 与 qa **串行**）。
+`pnpm check` = `factory:agents` → `factory:init` → `factory:contract` → `factory:manifest` → `qa:doctor`
+→ lint → typecheck → test → build → qa（策略门禁是第一项，Kits doctor 排在 lint 之前 —— 安装状态不可信时，
+后面那些绿没有意义；test 与 qa **串行**）。
 QA 端口 3210 只有一个来源（`.qa/qa.config.mjs`），`reuseExistingServer` 恒为 `false`。
 
 ## 结构

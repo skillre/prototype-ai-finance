@@ -24,10 +24,10 @@ type MobileNavProps = {
   active: NavId
   onNavigate: (id: NavId) => void
   onOpenCommand: () => void
-  /** 以下均为可选：不传时沿用 Starter 默认品牌与导航。 */
-  brand?: NavBrandDef
+  /** 产品身份三件套——必填，Factory 不提供默认值。 */
+  brand: NavBrandDef
   items?: NavItemDef[]
-  user?: NavUserDef
+  user: NavUserDef
   usage?: NavUsageDef | null
   context?: NavContextDef | null
   status?: NavStatusDef | null

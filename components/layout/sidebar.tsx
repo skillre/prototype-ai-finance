@@ -148,9 +148,10 @@ export function SidebarNav({
 }: {
   active: NavId
   onNavigate: (id: NavId) => void
-  brand?: NavBrandDef
+  /** 产品身份三件套——必填，Factory 不提供默认值。 */
+  brand: NavBrandDef
   items?: NavItemDef[]
-  user?: NavUserDef
+  user: NavUserDef
   usage?: NavUsageDef | null
   context?: NavContextDef | null
   status?: NavStatusDef | null
@@ -163,18 +164,8 @@ export function SidebarNav({
   utilities?: React.ReactNode
 }) {
   const t = useMessages()
-  const resolvedBrand: NavBrandDef = brand ?? {
-    name: t.workspace.brandName,
-    subtitle: t.workspace.brandSubtitle,
-    icon: BlocksIcon,
-  }
   // 导航由调用方给出：侧栏是产品结构的显示器，不预设任何产品的内容。
   const resolvedItems = items ?? []
-  const resolvedUser: NavUserDef = user ?? {
-    name: t.workspace.userName,
-    email: t.workspace.userEmail,
-    initials: t.workspace.userInitials,
-  }
   const resolvedContext: NavContextDef | null = context ?? null
   const resolvedUsage: NavUsageDef | null =
     resolvedContext ??
@@ -196,7 +187,7 @@ export function SidebarNav({
 
   return (
     <div className="flex h-full flex-col">
-      <Brand brand={resolvedBrand} />
+      <Brand brand={brand} />
       <span aria-hidden className="mx-3 h-px bg-sidebar-border" />
 
       {/*
@@ -443,13 +434,13 @@ export function SidebarNav({
           >
             <Avatar size="sm">
               <AvatarFallback className="bg-brand-soft text-brand">
-                {resolvedUser.initials}
+                {user.initials}
               </AvatarFallback>
             </Avatar>
             <span className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="truncate text-label font-semibold">{resolvedUser.name}</span>
+              <span className="truncate text-label font-semibold">{user.name}</span>
               <span className="truncate text-[0.6875rem] text-muted-foreground">
-                {resolvedUser.email}
+                {user.email}
               </span>
             </span>
             <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground/50 transition-transform duration-hover group-hover/account:translate-x-0.5 group-hover/account:text-brand" />
@@ -458,13 +449,13 @@ export function SidebarNav({
           <div className="flex items-center gap-2.5 rounded-panel border border-sidebar-border bg-surface/55 p-2 transition-colors duration-hover hover:bg-surface">
             <Avatar size="sm">
               <AvatarFallback className="bg-brand-soft text-brand">
-                {resolvedUser.initials}
+                {user.initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="truncate text-label font-semibold">{resolvedUser.name}</span>
+              <span className="truncate text-label font-semibold">{user.name}</span>
               <span className="truncate text-[0.6875rem] text-muted-foreground">
-                {resolvedUser.email}
+                {user.email}
               </span>
             </div>
           </div>
@@ -507,9 +498,10 @@ export function Sidebar({
 }: {
   active: NavId
   onNavigate: (id: NavId) => void
-  brand?: NavBrandDef
+  /** 产品身份三件套——必填，Factory 不提供默认值。 */
+  brand: NavBrandDef
   items?: NavItemDef[]
-  user?: NavUserDef
+  user: NavUserDef
   usage?: NavUsageDef | null
   context?: NavContextDef | null
   status?: NavStatusDef | null
