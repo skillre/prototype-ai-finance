@@ -158,7 +158,7 @@ Playwright 的 `reuseExistingServer` 会接受**任何**以 2xx/3xx 应答就绪
 - 整套断言在**错误的页面**上通过；
 - 更糟的是它不会失败——它报绿。
 
-同机的兄弟项目已经各自规避了这一点（hub 固定 3100；3200 曾被 starter / s1 / kits 三方同时占用，ai-research 因此移到 3230）；**本产品固定 3210**，并且从 2026-09-15 的治理对齐起，`playwright.config.ts` 不再接受任何"复用开关"（`FINANCE_REUSE` 已删除）。
+同机的兄弟项目已经各自规避了这一点（hub 固定 3100；3200 曾被 starter / sth / kits 三方同时占用，ai-research 因此移到 3230）；**本产品固定 3210**，并且从 2026-09-15 的治理对齐起，`playwright.config.ts` 不再接受任何"复用开关"（`FINANCE_REUSE` 已删除）。
 
 ### 规则
 
